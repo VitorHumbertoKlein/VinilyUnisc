@@ -1,0 +1,3230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinily</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111827">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VINILY">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+
+    <!-- SheetJS Library for Excel/CSV processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- D3.js for charts -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script>
+      // Força o tema escuro no carregamento inicial para a tela de login/registro.
+      document.documentElement.classList.add('dark');
+    </script>
+
+    <style>
+        /* CSS Reset/Base Simplificado */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; font-size: 16px; /* Base font size */ }
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden; /* Prevent horizontal scroll on body */
+        }
+        img, picture, video, canvas, svg { display: block; max-width: 100%; }
+        input, button, textarea, select { font: inherit; }
+        button { cursor: pointer; border: none; background: none; }
+        a { text-decoration: none; color: inherit; }
+        ul, ol { list-style: none; }
+
+        /* Variáveis de Cor (inspirado no Figma) */
+        :root {
+            --sidebarBg: #111827;
+            --sidebarText: #d1d5db;
+            --sidebarTextHover: #f9fafb;
+            --sidebarActiveBg: #facc15;
+            --sidebarActiveText: #1f2937;
+
+            --contentBgLight: #f9fafb;
+            --contentBgDark: #1f2937;
+            
+            --cardLight: #ffffff;
+            --cardDark: #374151;
+            
+            --textLightHeading: #111827;
+            --textDarkHeading: #f3f4f6;
+
+            --textLightBody: #374151;
+            --textDarkBody: #d1d5db;
+            
+            --textLightMuted: #6b7280;
+            --textDarkMuted: #9ca3af;
+
+            --borderLight: #e5e7eb;
+            --borderDark: #4b5563;
+
+            --inputBgLight: #f3f4f6;
+            --inputBgDark: #4b5563;
+            --inputBorderLight: #d1d5db;
+            --inputBorderDark: #6b7280;
+
+            --primaryAction: #facc15;
+            --primaryActionHover: #f59e0b;
+            --primaryActionText: #1f2937;
+
+            --secondaryAction: #3b82f6;
+            --secondaryActionHover: #2563eb;
+            --secondaryActionText: #ffffff;
+
+            --dangerAction: #ef4444;
+            --dangerActionHover: #dc2626;
+            --dangerActionText: #ffffff;
+
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+        }
+
+        /* Estilos Globais do Body */
+        body {
+            background-color: var(--contentBgLight);
+            color: var(--textLightBody);
+        }
+        html.dark body {
+            background-color: var(--contentBgDark);
+            color: var(--textDarkBody);
+        }
+
+        /* Classes Utilitárias Genéricas */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .space-x-1 > * + * { margin-left: 0.25rem; }
+        .space-x-1-5 > * + * { margin-left: 0.375rem; }
+        .space-x-3 > * + * { margin-left: 0.75rem; }
+        .space-x-4 > * + * { margin-left: 1rem; }
+        .space-y-2 > * + * { margin-top: 0.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; } 
+        .gap-x-5 { column-gap: 1.25rem; }
+        .gap-y-4 { row-gap: 1rem; }
+        .p-4 { padding: 1rem; }
+        .p-5 { padding: 1.25rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; } 
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+        .py-1-5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-2-5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-3-5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+        .pt-2 { padding-top: 0.5rem; }
+        .pt-4 { padding-top: 1rem; }
+        .pl-10 { padding-left: 2.5rem; }
+        .pr-10 { padding-right: 2.5rem; }
+        .m-auto { margin: auto; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-auto { margin-top: auto; }
+        .mb-1-5 { margin-bottom: 0.375rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mr-1-5 { margin-right: 0.375rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        .mr-3 { margin-right: 0.75rem; }
+        .ml-1-5 { margin-left: 0.375rem; }
+        .w-full { width: 100%; }
+        .w-12 { width: 3rem; } 
+        .w-48 { width: 12rem; }
+        .w-64 { width: 16rem; }
+        .max-w-md { max-width: 28rem; }
+        .max-w-xl { max-width: 36rem; }
+        .max-w-2xl { max-width: 42rem; } 
+        .min-h-screen { min-height: 100vh; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-full { border-radius: 9999px; }
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-base { font-size: 1rem; line-height: 1.5rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-wider { letter-spacing: 0.05em; }
+        .fixed { position: fixed; }
+        .absolute { position: absolute; }
+        .relative { position: relative; }
+        .inset-0 { top:0; right:0; bottom:0; left:0; }
+        .inset-y-0 { top:0; bottom:0; }
+        .left-0 { left:0; }
+        .right-0 { right:0; } 
+        .z-10 { z-index: 10; }
+        .z-20 { z-index: 20; }
+        .z-30 { z-index: 30; }
+        .z-40 { z-index: 40; } 
+        .z-50 { z-index: 50; }
+        .sticky { position: sticky; }
+        .top-0 { top: 0; }
+        .transform { transform: translateX(0) translateY(0) rotate(0) skewX(0) skewY(0) scaleX(1) scaleY(1); }
+        .transition-colors { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .transition-opacity { transition-property: opacity; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .duration-300 { transition-duration: 300ms; }
+        .opacity-0 { opacity: 0; }
+        .opacity-100 { opacity: 1; }
+        .pointer-events-none { pointer-events: none; }
+        .pointer-events-auto { pointer-events: auto; }
+        .backdrop-blur-sm { backdrop-filter: blur(4px); }
+        .overflow-x-auto { overflow-x: auto; }
+        .overflow-y-auto { overflow-y: auto; } 
+        .cursor-pointer { cursor: pointer; }
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } 
+        .md\:grid-cols-2 { /* For responsive grids */ }
+        .md\:grid-cols-3 { /* For responsive grids */ }
+        @media (min-width: 768px) { /* md breakpoint */
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        .col-span-2 { grid-column: span 2 / span 2; }
+        .h-6 { height: 1.5rem; }
+        .h-full { height: 100%; } 
+        .max-h-\[70vh\] { max-height: 70vh; } 
+        .block { display: block; }
+        .inline-flex { display: inline-flex; }
+        .flex-col { flex-direction: column; }
+        .flex-row { flex-direction: row; }
+        .flex-grow { flex-grow: 1; }
+        .flex-1 { flex: 1 1 0%; }
+        .antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+        /* Font families */
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-poppins { font-family: 'Poppins', sans-serif; }
+
+        /* Cores de texto */
+        .text-sidebarText { color: var(--sidebarText); }
+        .text-sidebarTextHover:hover { color: var(--sidebarTextHover); }
+        .text-sidebarActiveText { color: var(--sidebarActiveText); }
+        .text-textLightHeading { color: var(--textLightHeading); }
+        html.dark .text-textLightHeading { color: var(--textDarkHeading); }
+        .text-textLightBody { color: var(--textLightBody); }
+        html.dark .text-textLightBody { color: var(--textDarkBody); }
+        .text-textLightMuted { color: var(--textLightMuted); }
+        html.dark .text-textLightMuted { color: var(--textDarkMuted); }
+        .text-primaryAction { color: var(--primaryAction); }
+        .text-primaryActionText { color: var(--primaryActionText); }
+        .text-secondaryAction { color: var(--secondaryAction); }
+        .text-secondaryActionText { color: var(--secondaryActionText); }
+        .text-dangerAction { color: var(--dangerAction); }
+        .text-yellow-500 { color: #f59e0b; } 
+        .text-blue-400:hover { color: #60a5fa; }
+        html.dark .text-blue-400:hover { color: #38bdf8; }
+        .text-gray-400 { color: var(--gray-400); }
+        html.dark .text-gray-500 { color: var(--gray-500); }
+        
+        /* Cores de Fundo */
+        .bg-sidebarBg { background-color: var(--sidebarBg); }
+        .bg-sidebarActiveBg { background-color: var(--sidebarActiveBg); }
+        .bg-contentBgLight { background-color: var(--contentBgLight); }
+        html.dark .bg-contentBgDark { background-color: var(--contentBgDark); }
+        .bg-cardLight { background-color: var(--cardLight); }
+        html.dark .bg-cardDark { background-color: var(--cardDark); }
+        .bg-primaryAction { background-color: var(--primaryAction); }
+        .bg-primaryAction:hover { background-color: var(--primaryActionHover); }
+        .bg-secondaryAction { background-color: var(--secondaryAction); }
+        .bg-secondaryAction:hover { background-color: var(--secondaryActionHover); }
+        .bg-dangerAction { background-color: var(--dangerAction); }
+        .bg-dangerAction:hover { background-color: var(--dangerActionHover); }
+        .bg-gray-50 { background-color: #f9fafb; }
+        html.dark .bg-gray-700\/30 { background-color: rgba(55, 65, 81, 0.3); } 
+        .hover\:bg-gray-700:hover { background-color: var(--gray-700); }
+        .hover\:bg-gray-200:hover { background-color: var(--gray-200); }
+        html.dark .hover\:bg-gray-700:hover { background-color: var(--gray-700); }
+        .bg-black\/70 { background-color: rgba(0,0,0,0.7); }
+        .hover\:bg-primaryAction\/10:hover { background-color: rgba(250, 204, 21, 0.1); } 
+        html.dark .hover\:bg-primaryAction\/20:hover { background-color: rgba(250, 204, 21, 0.2); }
+        .hover\:bg-secondaryAction\/10:hover { background-color: rgba(59, 130, 246, 0.1); }
+        .bg-gray-200 { background-color: var(--gray-200); }
+        html.dark .bg-gray-600 { background-color: var(--gray-600); }
+        .hover\:bg-gray-300:hover { background-color: #d1d5db; } 
+        html.dark .hover\:bg-gray-500:hover { background-color: var(--gray-500); }
+
+        /* Bordas */
+        .border { border-width: 1px; }
+        .border-t { border-top-width: 1px; }
+        .border-b { border-bottom-width: 1px; }
+        .border-borderLight { border-color: var(--borderLight); }
+        html.dark .border-borderDark { border-color: var(--borderDark); }
+        .border-gray-700 { border-color: var(--gray-700); }
+        .focus\:border-primaryAction:focus { border-color: var(--primaryAction); }
+        .focus\:ring-1:focus { box-shadow: 0 0 0 1px var(--primaryAction); } 
+        .focus\:ring-2:focus { box-shadow: 0 0 0 2px var(--ring-color, var(--primaryAction)); }
+        
+        /* Modal */
+        .modal {
+            position: fixed; inset: 0;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: none; 
+            align-items: center; justify-content: center;
+            padding: 1rem;
+            transition: opacity 0.3s; opacity: 0; pointer-events: none; z-index: 50;
+        }
+        .modal.active { 
+            display: flex; 
+            opacity: 1; pointer-events: auto; 
+        }
+        .modal-content {
+            /* ...outros estilos que já estão aí... */
+            background-color: var(--cardLight);
+            padding: 1.5rem; border-radius: 0.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%; 
+            transform: scale(0.95); transition: transform 0.3s, background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh; /* IMPORTANTE: Limita a altura máxima a 90% da tela */
+        }
+        .modal-content-body {
+            overflow-y: auto;  /* IMPORTANTE: Ativa a rolagem vertical se o conteúdo for maior que a área */
+            flex-grow: 1;      /* IMPORTANTE: Faz esta área crescer para ocupar o espaço disponível */
+            padding-right: 0.5rem; /* Um pequeno espaço para a barra de rolagem */
+        }
+        .modal-content-body::-webkit-scrollbar-track {
+            background-color: var(--gray-200);
+            border-radius: 9999px;
+        }
+        html.dark .modal-content-body::-webkit-scrollbar-track {
+            background-color: var(--gray-700);
+        }
+        .modal-content-body::-webkit-scrollbar-thumb {
+            background-color: var(--gray-400);
+            border-radius: 9999px;
+        }
+        html.dark .modal-content-body::-webkit-scrollbar-thumb {
+            background-color: var(--gray-500);
+        }
+        html.dark .modal-content { background-color: var(--cardDark); }
+        .modal.active .modal-content { transform: scale(1); }
+        @media (min-width: 640px) { 
+            .modal { padding: 1.5rem; }
+            .modal-content { padding: 2rem; }
+        }
+        .modal-content.max-w-xl { max-width: 36rem; }
+        .modal-content.max-w-2xl { max-width: 42rem; }
+        .modal-content.max-w-md { max-width: 28rem; }
+        
+        /* Tabela */
+        .table-header {
+            padding: 0.6rem 1rem; /* Adjusted for thinner rows */
+            text-align: left; font-size: 0.75rem; font-weight: 600;
+            color: var(--textLightMuted); text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        html.dark .table-header { color: var(--textDarkMuted); }
+        .table-header-sortable {
+            cursor: pointer; transition: background-color 0.15s;
+        }
+        .table-header-sortable:hover { background-color: rgba(250, 204, 21, 0.05); } 
+        html.dark .table-header-sortable:hover { background-color: rgba(250, 204, 21, 0.1); } 
+        .table-header-sortable .sort-icon-container {
+            display: inline-flex; align-items: center; margin-left: 0.375rem; opacity: 0.6; transition: opacity 0.15s;
+        }
+        .table-header-sortable:hover .sort-icon-container { opacity: 1; }
+        .table-header-sortable.sorted .sort-icon-container { opacity: 1; color: var(--primaryAction); }
+        .table-header-sortable .fa-sort { color: var(--gray-400); }
+        html.dark .table-header-sortable .fa-sort { color: var(--gray-500); }
+        .table-header-sortable .fa-sort-up, .table-header-sortable .fa-sort-down { display: none; }
+        .table-header-sortable.sorted-asc .fa-sort-up { display: inline-block; }
+        .table-header-sortable.sorted-desc .fa-sort-down { display: inline-block; }
+        .table-header-sortable.sorted .fa-sort { display: none; }
+
+        .loading-spinner {
+            border: 3px solid currentColor; border-left-color: transparent;
+            border-radius: 50%; width: 20px; height: 20px;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Botões */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 500; padding: 0.625rem 1.25rem; 
+            border-radius: 0.5rem; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            transition: all 0.2s ease-in-out;
+            outline: none;
+        }
+        .btn:focus { 
+            box-shadow: 0 0 0 2px var(--contentBgLight), 0 0 0 4px var(--focus-ring-color, var(--primaryAction));
+        }
+        html.dark .btn:focus {
+             box-shadow: 0 0 0 2px var(--contentBgDark), 0 0 0 4px var(--focus-ring-color, var(--primaryAction));
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary-action {
+            background-color: var(--primaryAction); color: var(--primaryActionText);
+            --focus-ring-color: var(--primaryAction);
+        }
+        .btn-primary-action:hover { background-color: var(--primaryActionHover); }
+        
+        .btn-secondary-action {
+            background-color: var(--secondaryAction); color: var(--secondaryActionText);
+            --focus-ring-color: var(--secondaryAction);
+        }
+        .btn-secondary-action:hover { background-color: var(--secondaryActionHover); }
+
+        .btn-danger {
+            background-color: var(--dangerAction); color: var(--dangerActionText);
+            --focus-ring-color: var(--dangerAction);
+        }
+        .btn-danger:hover { background-color: var(--dangerActionHover); }
+
+        .btn-ghost {
+            color: var(--secondaryAction); box-shadow: none;
+            --focus-ring-color: var(--secondaryAction);
+        }
+        .btn-ghost:hover { background-color: rgba(59, 130, 246, 0.1); } 
+        
+        .btn-sidebar-logout {
+            background-color: var(--dangerAction); color: var(--dangerActionText);
+            width: 100%; margin-top: auto;
+            --focus-ring-color: var(--dangerAction);
+        }
+        .btn-sidebar-logout:hover { background-color: var(--dangerActionHover); }
+        
+        .btn-gray { 
+            background-color: var(--gray-200); color: var(--textLightBody);
+            --focus-ring-color: var(--gray-400);
+        }
+        .btn-gray:hover { background-color: #d1d5db; } 
+        html.dark .btn-gray {
+            background-color: var(--gray-600); color: var(--textDarkBody);
+        }
+        html.dark .btn-gray:hover { background-color: var(--gray-500); }
+
+        /* Inputs */
+        .input-field {
+            margin-top: 0.25rem; display: block; width: 100%;
+            padding: 0.625rem 1rem; 
+            background-color: var(--inputBgLight); border: 1px solid var(--inputBorderLight);
+            border-radius: 0.5rem; font-size: 0.875rem; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            color: var(--textLightBody);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        html.dark .input-field {
+            background-color: var(--inputBgDark); border-color: var(--inputBorderDark);
+            color: var(--textDarkBody);
+        }
+        .input-field::placeholder { color: var(--textLightMuted); }
+        html.dark .input-field::placeholder { color: var(--textDarkMuted); }
+        .input-field:focus {
+            outline: none; border-color: var(--primaryAction);
+            box-shadow: 0 0 0 1px var(--primaryAction);
+        }
+        select.input-field { padding-right: 2.5rem; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1.25em; }
+        html.dark select.input-field { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239ca3af'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");}
+
+        /* Table Wrapper */
+        .table-wrapper {
+            overflow-x: auto; 
+            background-color: var(--cardLight);
+            border-radius: 0.75rem; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            flex-grow: 1; 
+            width: 100%; 
+            display: block; 
+        }
+        html.dark .table-wrapper { background-color: var(--cardDark); }
+        .table-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
+        .table-wrapper::-webkit-scrollbar-track { background-color: var(--gray-200); border-radius: 9999px; }
+        html.dark .table-wrapper::-webkit-scrollbar-track { background-color: var(--gray-700); }
+        .table-wrapper::-webkit-scrollbar-thumb { background-color: var(--gray-400); border-radius: 9999px; }
+        html.dark .table-wrapper::-webkit-scrollbar-thumb { background-color: var(--gray-500); }
+        .table-wrapper::-webkit-scrollbar-thumb:hover { background-color: var(--gray-500); }
+        html.dark .table-wrapper::-webkit-scrollbar-thumb:hover { background-color: var(--gray-400); }
+        
+        #appContainer table {
+            table-layout: fixed; 
+        }
+        .min-w-\[1000px\] { 
+            min-width: 1000px;
+        }
+        .truncate-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block; 
+            max-width: 100%; 
+        }
+        /* Centralização de texto para colunas específicas */
+        #appContainer table td.text-center .truncate-text,
+        .col-dataLancamento .truncate-text,
+        .col-genero .truncate-text,
+        .col-notaAlbum .truncate-text,
+        .col-notaCapa .truncate-text,
+        .col-pais .truncate-text {
+            text-align: center;
+        }
+
+
+        #appContainer table tbody tr {
+            border-bottom: 1px solid var(--borderLight);
+            transition: background-color: 0.15s;
+        }
+        html.dark #appContainer table tbody tr { border-bottom-color: var(--borderDark); }
+        #appContainer table tbody tr:last-child { border-bottom-width: 0; }
+        #appContainer table tbody tr:hover { background-color: rgba(250, 204, 21, 0.05); } 
+        html.dark #appContainer table tbody tr:hover { background-color: rgba(250, 204, 21, 0.1); } 
+        #appContainer table td { 
+            padding: 0.4rem 1rem; /* Adjusted vertical padding for thinner rows */
+            font-size: 0.875rem; 
+        }
+
+        .auth-wrapper {
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 1rem;
+            background-image: linear-gradient(to bottom right, var(--secondaryAction), var(--primaryAction), #fbbf24); 
+        }
+        html.dark .auth-wrapper {
+            background-image: linear-gradient(to bottom right, #1e3a8a, var(--sidebarBg), #000000 ); 
+        }
+        .auth-card {
+            background-color: var(--cardLight); padding: 2rem;
+            border-radius: 0.75rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            width: 100%; max-width: 28rem;
+        }
+        html.dark .auth-card { background-color: var(--cardDark); }
+        .auth-title {
+            font-family: 'Poppins', sans-serif; font-size: 1.875rem; font-weight: 700;
+            margin-bottom: 2rem; text-align: center; color: var(--textLightHeading);
+        }
+        html.dark .auth-title { color: var(--textDarkHeading); }
+        @media (min-width: 640px) { 
+            .auth-wrapper { padding: 1.5rem; }
+            .auth-card { padding: 2.5rem; }
+            .auth-title { font-size: 2.25rem; }
+        }
+        .label-text { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; color: var(--textLightBody); }
+        html.dark .label-text { color: var(--textDarkBody); }
+
+        .sidebar {
+            background-color: var(--sidebarBg); color: var(--sidebarText);
+            width: 16rem; min-height: 100vh; display: flex; flex-direction: column;
+            padding: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            position: fixed; top: 0; bottom: 0; left: 0; z-index: 30;
+            transform: translateX(-100%); transition: transform 0.3s ease-in-out;
+        }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-link {
+            display: flex; align-items: center; column-gap: 0.75rem; 
+            padding: 0.625rem 0.75rem; 
+            border-radius: 0.5rem; transition: background-color 0.15s, color 0.15s;
+        }
+        .sidebar-link:hover { background-color: var(--gray-700); color: var(--sidebarTextHover); }
+        .sidebar-link.active {
+            background-color: var(--sidebarActiveBg); color: var(--sidebarActiveText); font-weight: 600;
+        }
+        .sidebar-link > i { width: 1.25rem; text-align: center; } 
+        .sidebar > nav {
+            overflow-y: auto; /* Adiciona rolagem vertical apenas se os links não couberem */
+            flex-grow: 1;     /* Garante que continue empurrando o botão de Sair para o final */
+        }
+        .sidebar > nav > *:not(:last-child) { margin-bottom: 0.5rem; } 
+
+        .main-content { 
+            flex: 1 1 0%; 
+            display: flex; 
+            flex-direction: column; 
+            transition: margin-left 0.3s ease-in-out; 
+            position: relative; /* Contexto para a sidebar */
+            height: 100vh;      /* Ocupa a altura total da tela */
+            overflow-x: hidden;
+
+        }
+        .main-content-scroll-area {
+            flex-grow: 1;         /* Faz esta área crescer para ocupar o espaço */
+            overflow-y: auto;     /* Permite a rolagem vertical do conteúdo */
+            overflow-x: hidden;   /* PREVINE a rolagem horizontal da página */
+        }
+        .sidebar-overlay {
+            position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 20; display: none;
+        }
+        .sidebar-overlay.open { display: block; }
+
+        @media (min-width: 768px) { 
+            .sidebar { transform: translateX(0); }
+            .main-content { margin-left: 16rem; } 
+            .sidebar-overlay { display: none !important; }
+            #mobileMenuButton { display: none; }
+        }
+        
+        .header-main {
+            background-color: var(--cardLight);
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            padding: 1rem;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 10;
+        }
+        html.dark .header-main { background-color: var(--cardDark); }
+        @media (min-width: 640px) { 
+            .header-main { padding: 1rem 1.5rem; } 
+        }
+        /* .header-main .input-field was removed as the input was removed */
+        .header-main .btn-secondary-action {
+            padding: 0.625rem !important; 
+            background-color: transparent !important;
+            color: var(--textLightBody);
+        }
+        .header-main .btn-secondary-action:hover { background-color: var(--gray-200) !important; }
+        html.dark .header-main .btn-secondary-action { color: var(--textDarkBody); }
+        html.dark .header-main .btn-secondary-action:hover { background-color: var(--gray-700) !important; }
+
+        .app-section-content { flex-grow: 1; padding: 1rem; }
+        @media (min-width: 640px) { .app-section-content { padding: 1.5rem; } }
+        @media (min-width: 1024px) { .app-section-content { padding: 2rem; } }
+
+        .filters-section {
+            margin-bottom: 1.5rem; padding: 1rem;
+            background-color: var(--cardLight); border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        html.dark .filters-section { background-color: var(--cardDark); }
+        @media (min-width: 640px) { 
+            .filters-section { margin-bottom: 2rem; padding: 1.5rem; }
+        }
+        .filters-section .grid {
+            display: grid; gap: 1rem; 
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+        @media (min-width: 640px) { .filters-section .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (min-width: 1024px) { .filters-section .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (min-width: 1280px) { .filters-section .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+        .btn-table-action {
+            padding: 0.5rem !important; 
+            box-shadow: none !important; 
+        }
+        .btn-table-action.text-secondaryAction:hover { background-color: rgba(59, 130, 246, 0.1) !important; } 
+        .btn-table-action.text-dangerAction:hover { background-color: rgba(239, 68, 68, 0.1) !important; } 
+
+        .button-text.hidden + .button-loader,
+        .button-loader:not(.hidden) { display: inline-block; }
+        .button-loader.hidden { display: none; }
+        .button-text + .button-loader.hidden { display: none; }
+
+        /* Import Modal Specific Styles */
+        .column-mapping-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .mapping-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .mapping-item label {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--textLightBody);
+        }
+        html.dark .mapping-item label {
+            color: var(--textDarkBody);
+        }
+        .mapping-item select {
+            width: 100%;
+        }
+        .file-input-label {
+            display: inline-block;
+            padding: 0.625rem 1.25rem;
+            background-color: var(--secondaryAction);
+            color: var(--secondaryActionText);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: center;
+        }
+        .file-input-label:hover {
+            background-color: var(--secondaryActionHover);
+        }
+        #importFileName {
+            margin-top: 0.75rem;
+            font-style: italic;
+            color: var(--textLightMuted);
+        }
+        html.dark #importFileName {
+            color: var(--textDarkMuted);
+        }
+        #importProgressBarContainer {
+            width: 100%;
+            background-color: var(--inputBgLight);
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            overflow: hidden; 
+        }
+        html.dark #importProgressBarContainer {
+            background-color: var(--inputBgDark);
+        }
+        #importProgressBar {
+            width: 0%;
+            height: 1.25rem; 
+            background-color: var(--primaryAction);
+            border-radius: 0.5rem;
+            text-align: center;
+            line-height: 1.25rem;
+            color: var(--primaryActionText);
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: width 0.3s ease-in-out;
+        }
+        /* Bulk Actions Section */
+        #bulkActionsSection {
+             /* Default hidden, shown by JS */
+        }
+        .table-checkbox {
+            width: 1rem; 
+            height: 1rem; 
+            cursor: pointer;
+            accent-color: var(--primaryAction); /* Style checkbox color */
+        }
+        /* Column Visibility Dropdown */
+        #columnVisibilityDropdown {
+            position: absolute;
+            right: 0;
+            margin-top: 0.5rem; /* mt-2 */
+            width: 12rem; /* w-48 */
+            background-color: var(--cardLight);
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); /* shadow-lg */
+            z-index: 40; /* Ensure it's above table content but below modals */
+            padding: 0.5rem 0; /* py-2 */
+        }
+        html.dark #columnVisibilityDropdown {
+            background-color: var(--cardDark);
+        }
+        #columnVisibilityDropdown label {
+            display: block;
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            font-size: 0.875rem; /* text-sm */
+            color: var(--textLightBody);
+            cursor: pointer;
+        }
+        html.dark #columnVisibilityDropdown label {
+            color: var(--textDarkBody);
+        }
+        #columnVisibilityDropdown label:hover {
+            background-color: var(--gray-200);
+        }
+        html.dark #columnVisibilityDropdown label:hover {
+            background-color: var(--gray-700);
+        }
+        #columnVisibilityDropdown input[type="checkbox"] {
+            margin-right: 0.5rem; /* mr-2 */
+            accent-color: var(--primaryAction);
+        }
+        /* Profile Section Styles */
+        #profileSection {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* space-y-6 */
+        }
+        .profile-grid { 
+            display: grid;
+            gap: 1.5rem; 
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .profile-grid-cols-2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .profile-card {
+            background-color: var(--cardLight);
+            padding: 1.5rem; /* p-6 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); /* shadow-lg */
+        }
+        html.dark .profile-card {
+            background-color: var(--cardDark);
+        }
+        .profile-card-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            margin-bottom: 1rem; /* mb-4 */
+            color: var(--textLightHeading);
+        }
+        html.dark .profile-card-title {
+            color: var(--textDarkHeading);
+        }
+        .profile-stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0; /* py-2 */
+            border-bottom: 1px solid var(--borderLight);
+        }
+        html.dark .profile-stat-item {
+            border-bottom-color: var(--borderDark);
+        }
+        .profile-stat-item:last-child {
+            border-bottom: none;
+        }
+        .profile-stat-label {
+            color: var(--textLightMuted);
+        }
+        html.dark .profile-stat-label {
+            color: var(--textDarkMuted);
+        }
+        .profile-stat-value {
+            font-weight: 500;
+        }
+        .chart-container {
+            width: 100%;
+            height: 300px; /* Adjust as needed */
+            margin-top: 1rem;
+        }
+        .chart-container svg {
+            width: 100%;
+            height: 100%;
+        }
+        .chart-container .bar {
+            fill: var(--primaryAction);
+            transition: fill 0.2s;
+        }
+        .chart-container .bar:hover {
+            fill: var(--primaryActionHover);
+        }
+        .chart-container .axis path,
+        .chart-container .axis line {
+            fill: none;
+            stroke: var(--textLightMuted);
+            shape-rendering: crispEdges;
+        }
+        html.dark .chart-container .axis path,
+        html.dark .chart-container .axis line {
+            stroke: var(--textDarkMuted);
+        }
+        .chart-container .axis text {
+            font-size: 0.75rem;
+            fill: var(--textLightMuted);
+        }
+        html.dark .chart-container .axis text {
+            fill: var(--textDarkMuted);
+        }
+        .chart-tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            background: var(--cardDark);
+            color: var(--sidebarTextHover);
+            border: 1px solid var(--borderDark);
+            border-radius: 0.375rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        html.dark .chart-tooltip {
+            background: var(--cardLight);
+            color: var(--textLightHeading);
+            border-color: var(--borderLight);
+        }
+         /* Records by Year/Month */
+        .year-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--borderLight);
+            cursor: pointer;
+        }
+        html.dark .year-item {
+            border-bottom-color: var(--borderDark);
+        }
+        .year-item:last-child {
+            border-bottom: none;
+        }
+        .year-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        .year-header .expand-icon {
+            transition: transform 0.3s ease;
+        }
+        .year-item.expanded .year-header .expand-icon {
+            transform: rotate(90deg);
+        }
+        .month-list {
+            list-style: none;
+            padding-left: 1.5rem; /* Indent months */
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .year-item.expanded .month-list {
+            max-height: 500px; /* Adjust as needed for max number of months */
+            margin-top: 0.5rem;
+        }
+        .month-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.375rem 0;
+            font-size: 0.875rem;
+            color: var(--textLightMuted);
+        }
+        html.dark .month-item {
+             color: var(--textDarkMuted);
+        }
+        .month-item .profile-stat-value {
+            color: var(--textLightBody);
+        }
+        html.dark .month-item .profile-stat-value {
+             color: var(--textDarkBody);
+        }
+        /* Chat Section Styles */
+        #chatSection {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; /* Diz para a seção crescer e ocupar todo o espaço vertical disponível */
+            /* A altura fixa foi removida */
+        }
+        @media (min-width: 768px) {
+            #chatSection {
+                height: calc(100vh - 150px); /* Original height for larger screens */
+            }
+        }
+        #chatMessagesContainer {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            border: 1px solid var(--borderLight);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            background-color: var(--cardLight);
+        }
+        html.dark #chatMessagesContainer {
+            border-color: var(--borderDark);
+            background-color: var(--cardDark);
+        }
+        .chat-message {
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        .chat-message.user {
+            background-color: var(--primaryAction);
+            color: var(--primaryActionText);
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .chat-message.ai {
+            background-color: var(--gray-200);
+            color: var(--textLightBody);
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+        }
+        html.dark .chat-message.ai {
+            background-color: var(--gray-600);
+            color: var(--textDarkBody);
+        }
+        .chat-message p { margin-bottom: 0.25rem; }
+        .chat-message p:last-child { margin-bottom: 0; }
+
+        #chatInputContainer {
+            display: flex;
+            gap: 0.5rem;
+        }
+        #chatInput {
+            flex-grow: 1;
+            margin-top: 0; /* Override default input-field margin */
+        }
+        #sendChatMessageBtn {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .min-w-\[1000px\] { /* Defined class for table min-width */
+            min-width: 1000px;
+        }
+
+        /* =============================================== */
+        /* === AJUSTES PARA CELULAR NA HORIZONTAL (LANDSCAPE) === */
+        /* =============================================== */
+
+        /* Aplica estas regras apenas quando a tela for mais larga que alta E a altura for menor que 500px */
+        @media (orientation: landscape) and (max-height: 500px) {
+
+            /* --- Correção para o Sidebar --- */
+            /* Faz a área de navegação do menu lateral rolar, garantindo que os botões de baixo fiquem visíveis */
+            .sidebar > nav {
+                overflow-y: auto;
+                flex-grow: 1;
+            }
+            
+            /* --- Correção para a Seção de Chat --- */
+            /* Força a seção de chat a ocupar o espaço vertical restante de forma mais inteligente */
+            #chatSection {
+                flex-grow: 1; /* Permite que a seção cresça */
+                height: auto;   /* Remove a altura fixa baseada em 'vh' */
+            }
+        }
+        /* ======================================================== */
+        /* === Lógica de Visibilidade dos Ícones do Cabeçalho === */
+        /* ======================================================== */
+
+        /* Padrão (Mobile Vertical - telas com menos de 640px de largura):
+        - Esconde os ícones individuais do desktop.
+        - Mostra o menu "Mais Opções" (três pontos). */
+        #desktopActionIcons {
+            display: none;
+        }
+        #mobileActionIcons {
+            display: block;
+        }
+
+        /* Telas Maiores (Tablets, Desktops, Celular na Horizontal - 640px e acima):
+        - Inverte a visibilidade: mostra os ícones individuais.
+        - Esconde o menu "Mais Opções". */
+        @media (min-width: 640px) {
+            #desktopActionIcons {
+                display: flex; /* Mostra os ícones lado a lado */
+            }
+            #mobileActionIcons {
+                display: none; /* Esconde o botão de 3 pontos */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Auth sections remain the same -->
+    <div id="loginSection" class="auth-wrapper">
+        <div class="auth-card">
+            <h2 class="auth-title font-poppins">Bem-vindo!</h2>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="loginEmail" class="label-text">Seu Email</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3-5 text-textLightMuted"><i class="fas fa-envelope fa-sm"></i></span>
+                        <input type="email" id="loginEmail" class="input-field pl-10" placeholder="nome@email.com" required>
+                    </div>
+                </div>
+                <div>
+                    <label for="loginPassword" class="label-text">Sua Senha</label>
+                     <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3-5 text-textLightMuted"><i class="fas fa-lock fa-sm"></i></span>
+                        <input type="password" id="loginPassword" class="input-field pl-10" placeholder="••••••••" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-action w-full py-3 text-base">
+                    <span class="button-text">Entrar</span>
+                    <div class="loading-spinner button-loader hidden"></div>
+                </button>
+            </form>
+            <p class="mt-8 text-center text-sm text-textLightMuted">
+                Novo por aqui? <button id="showRegister" class="font-semibold text-secondaryAction hover:text-secondaryActionHover">Crie sua conta</button>
+            </p>
+            <p id="loginError" class="text-dangerAction text-sm mt-4 text-center h-6"></p>
+        </div>
+    </div>
+
+    <div id="registerSection" class="auth-wrapper hidden">
+        <div class="auth-card">
+            <h2 class="auth-title font-poppins">Crie Sua Conta</h2>
+            <form id="registerForm" class="space-y-6">
+                <div>
+                    <label for="registerEmail" class="label-text">Email</label>
+                     <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3-5 text-textLightMuted"><i class="fas fa-envelope fa-sm"></i></span>
+                        <input type="email" id="registerEmail" class="input-field pl-10" placeholder="nome@email.com" required>
+                    </div>
+                </div>
+                <div>
+                    <label for="registerPassword" class="label-text">Senha</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3-5 text-textLightMuted"><i class="fas fa-lock fa-sm"></i></span>
+                        <input type="password" id="registerPassword" class="input-field pl-10" placeholder="Mínimo 6 caracteres" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-action w-full py-3 text-base">
+                     <span class="button-text">Criar Conta</span>
+                    <div class="loading-spinner button-loader hidden"></div>
+                </button>
+            </form>
+            <p class="mt-8 text-center text-sm text-textLightMuted">
+                Já possui uma conta? <button id="showLogin" class="font-semibold text-secondaryAction hover:text-secondaryActionHover">Faça Login</button>
+            </p>
+            <p id="registerError" class="text-dangerAction text-sm mt-4 text-center h-6"></p>
+        </div>
+    </div>
+
+    <div id="appContainer" class="hidden"> 
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+        <aside id="sidebar" class="sidebar">
+            <div class="mb-6 text-center">
+                <a href="#" class="text-2xl font-poppins font-bold text-sidebarActiveBg">VINILY</a>
+                <p id="sidebarUserName" class="text-sm text-textDarkMuted mt-1">Bem-vindo!</p>
+            </div>
+
+            <nav>
+                <a href="#" id="navDashboard" class="sidebar-link active">
+                    <i class="fas fa-table fa-fw"></i> 
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" id="navProfile" class="sidebar-link"> 
+                    <i class="fas fa-user-circle fa-fw"></i>
+                    <span>Meu Perfil</span>
+                </a>
+                 <a href="#" id="navChatAI" class="sidebar-link"> 
+                    <i class="fas fa-comments fa-fw"></i>
+                    <span>Chat com IA</span>
+                </a>
+            </nav>
+
+            <div class="pt-4 border-t border-gray-700">
+                 <span id="userIdDisplaySidebar" class="text-xs text-textDarkMuted block text-center mb-2"></span>
+                <button id="logoutBtnSidebar" class="btn btn-sidebar-logout">
+                    <i class="fas fa-sign-out-alt fa-fw mr-2"></i>Sair
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header-main">
+                <div class="flex items-center">
+                    <button id="mobileMenuButton" class="mr-3 text-textLightBody">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                    <h1 id="mainContentTitle" class="text-2xl font-poppins font-semibold text-textLightHeading">Seus Registros</h1>
+                </div>
+                <div class="flex items-center space-x-1 sm:space-x-3">
+                    <!-- Botão Adicionar (sempre visível) -->
+                    <button id="addRecordBtnHeader" class="btn btn-secondary-action p-2-5 bg-transparent hover:bg-gray-200 text-textLightBody">
+                        <i class="fas fa-plus-circle fa-fw text-xl"></i>
+                    </button>
+
+                    <!-- Ícones que aparecerão em telas maiores -->
+                    <div id="desktopActionIcons" class="flex items-center space-x-1 sm:space-x-3">
+                        <button id="toggleFiltersBtnHeader" class="btn btn-secondary-action p-2-5 bg-transparent hover:bg-gray-200 text-textLightBody">
+                            <i class="fas fa-filter fa-fw text-xl"></i>
+                        </button>
+                        <div class="relative">
+                            <button id="columnVisibilityBtn" class="btn btn-secondary-action p-2-5 bg-transparent hover:bg-gray-200 text-textLightBody">
+                                <i class="fas fa-columns text-xl"></i>
+                            </button>
+                            <div id="columnVisibilityDropdown" class="hidden"></div>
+                        </div>
+                        <button id="importSheetBtnHeader" class="btn btn-secondary-action p-2-5 bg-transparent hover:bg-gray-200 text-textLightBody">
+                            <i class="fas fa-file-import fa-fw text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- Menu "Mais Opções" para telas pequenas -->
+                    <div id="mobileActionIcons" class="relative">
+                        <button id="moreOptionsBtnHeader" class="btn btn-secondary-action p-2-5 bg-transparent hover:bg-gray-200 text-textLightBody">
+                            <i class="fas fa-ellipsis-v fa-fw text-xl"></i>
+                        </button>
+                        <div id="moreOptionsDropdown" class="hidden absolute right-0 mt-2 w-48 bg-cardLight dark:bg-cardDark rounded-lg shadow-lg z-40">
+                            <a href="#" id="toggleFiltersMenuItem" class="flex items-center gap-3 px-4 py-2 text-sm text-textLightBody dark:text-textDarkBody hover:bg-gray-200 dark:hover:bg-gray-700"><i class="fas fa-filter fa-fw w-6 text-center"></i> Alternar Filtros</a>
+                            <a href="#" id="columnVisibilityMenuItem" class="flex items-center gap-3 px-4 py-2 text-sm text-textLightBody dark:text-textDarkBody hover:bg-gray-200 dark:hover:bg-gray-700"><i class="fas fa-columns fa-fw w-6 text-center"></i> Colunas</a>
+                            <a href="#" id="importSheetMenuItem" class="flex items-center gap-3 px-4 py-2 text-sm text-textLightBody dark:text-textDarkBody hover:bg-gray-200 dark:hover:bg-gray-700"><i class="fas fa-file-import fa-fw w-6 text-center"></i> Importar</a>
+                        </div>
+                    </div>
+
+                    <!-- Botão de Tema (sempre visível) -->
+                    <button id="themeToggleBtnMain" class="btn btn-secondary-action p-2-5 bg-transparent hover:bg-gray-200 text-textLightBody">
+                        <i class="fas fa-sun text-yellow-500 text-xl"></i>
+                        <i class="fas fa-moon hidden text-secondaryAction text-xl"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <div class="main-content-scroll-area">
+                <!-- App content sections remain the same -->
+                <div id="appSectionContent" class="app-section-content">
+                    <div id="filtersSection" class="filters-section">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-5">
+                            <h3 class="text-xl font-poppins font-semibold text-textLightHeading">Filtros Avançados</h3>
+                            <button id="clearFiltersBtnContent" class="btn btn-ghost text-sm py-1-5 px-3 mt-2 sm:mt-0">
+                                <i class="fas fa-eraser fa-sm mr-1-5"></i>Limpar Filtros
+                            </button>
+                        </div>
+                        <div class="grid">
+                            <input type="text" id="searchInputContent" placeholder="Filtrar por termo..." class="input-field">
+                            <input type="date" id="filterReleaseDateContent" class="input-field" title="Filtrar por data de lançamento">
+                            <select id="filterGenreContent" class="input-field">
+                                <option value="">Todos os Gêneros</option>
+                            </select>
+                            <select id="filterCountryContent" class="input-field">
+                                <option value="">Todos os Países</option>
+                            </select>
+                            <input type="number" id="filterMinRatingAlbumContent" placeholder="Nota Mín. Álbum" min="0" max="10" step="0.1" class="input-field">
+                            <input type="number" id="filterMaxRatingAlbumContent" placeholder="Nota Máx. Álbum" min="0" max="10" step="0.1" class="input-field">
+                        </div>
+                    </div>
+
+                    <div id="bulkActionsSection" class="mb-4 flex items-center justify-between hidden">
+                        <span id="selectedCountDisplay" class="text-sm text-textLightMuted">0 itens selecionados</span>
+                        <button id="deleteSelectedBtn" class="btn btn-danger text-sm py-2 px-4">
+                            <i class="fas fa-trash-alt mr-2"></i>Excluir Selecionados
+                        </button>
+                    </div>
+
+
+                    <div class="table-wrapper">
+                        <table class="min-w-[1000px] text-sm"> 
+                            <thead class="bg-gray-50 sticky top-0 z-0"></thead>
+                            <tbody id="recordsTableBodyContent" class="divide-y">
+                                <tr id="loadingRowContent">
+                                    <td colspan="9" class="p-8 text-center"> 
+                                        <div class="flex flex-col items-center justify-center text-textLightMuted">
+                                            <div class="loading-spinner mb-3 text-primaryAction"></div>
+                                            Carregando seus tesouros musicais...
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="noRecordsRowContent" class="hidden">
+                                    <td colspan="9" class="p-8 text-center text-textLightMuted"> 
+                                        <i class="fas fa-compact-disc fa-3x mb-3 text-gray-400"></i><br>
+                                        <span class="text-lg">Nenhum registro encontrado.</span><br>
+                                        Use o menu lateral para adicionar o primeiro!
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div> 
+                
+                <div id="profileSection" class="app-section-content hidden">
+                    <div class="profile-grid md:grid-cols-2 mb-6">
+                        <div class="profile-card">
+                            <h3 class="profile-card-title">Estatísticas Gerais</h3>
+                            <div id="generalStatsContainer">
+                                <div class="profile-stat-item">
+                                    <span class="profile-stat-label">Total de Álbuns Catalogados:</span>
+                                    <span id="totalAlbumsStat" class="profile-stat-value">-</span>
+                                </div>
+                                <div class="profile-stat-item">
+                                    <span class="profile-stat-label">Média de Notas (Álbum):</span>
+                                    <span id="averageAlbumRatingStat" class="profile-stat-value">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="profile-card">
+                            <h3 class="profile-card-title">Registros Adicionados por Ano/Mês</h3>
+                            <ul id="recordsByYearMonthList" class="space-y-2 max-h-[300px] overflow-y-auto">
+                                </ul>
+                        </div>
+                    </div>
+
+                    <div class="profile-grid md:grid-cols-2">
+                        <div class="profile-card">
+                            <h3 class="profile-card-title">Top Gêneros Musicais</h3>
+                            <div id="topGenresChartContainer" class="chart-container"></div>
+                            <ul id="topGenresList" class="mt-4 space-y-1 text-sm"></ul>
+                        </div>
+                        <div class="profile-card">
+                            <h3 class="profile-card-title">Álbuns por Década</h3>
+                            <div id="albumsByDecadeChartContainer" class="chart-container"></div>
+                            <ul id="albumsByDecadeList" class="mt-4 space-y-1 text-sm"></ul>
+                        </div>
+                    </div>
+                    <div class="profile-card">
+                        <h3 class="profile-card-title">Média de Notas por Década</h3>
+                        <div id="avgRatingByDecadeChartContainer" class="chart-container"></div>
+                    </div>
+
+
+                    <div class="profile-grid md:grid-cols-2">
+                        <div class="profile-card">
+                            <h3 class="profile-card-title">Top Artistas</h3>
+                            <ul id="topArtistsList" class="space-y-1 text-sm max-h-[300px] overflow-y-auto"></ul>
+                        </div>
+                        <div class="profile-card">
+                            <h3 class="profile-card-title">Top Países de Origem</h3>
+                            <ul id="topCountriesList" class="space-y-1 text-sm max-h-[300px] overflow-y-auto"></ul>
+                        </div>
+                    </div>
+                    <div class="profile-card">
+                        <h3 class="profile-card-title">Distribuição das Suas Notas (Álbum)</h3>
+                        <div id="ratingDistributionChartContainer" class="chart-container"></div>
+                    </div>
+                    
+                    <div id="profileNoDataMessage" class="hidden text-center p-8 text-textLightMuted">
+                        <i class="fas fa-chart-line fa-3x mb-3 text-gray-400"></i><br>
+                        <span class="text-lg">Ainda não há dados suficientes para exibir as estatísticas.</span><br>
+                        Adicione mais registros ao seu catálogo!
+                    </div>
+                </div>
+
+                <!-- Chat Section -->
+                <div id="chatSection" class="app-section-content hidden">
+                    <div class="profile-card h-full flex flex-col">
+                        <h3 class="profile-card-title">Chat com IA sobre seus Registros</h3>
+                        <div id="chatMessagesContainer" class="flex-grow mb-4 p-4 border rounded-lg overflow-y-auto bg-gray-50 dark:bg-gray-700/30">
+                            <div class="chat-message ai">Olá! Pergunte-me sobre seus hábitos musicais com base nos seus registros. Por exemplo: "Qual gênero mais escutei em 2023?" ou "Quais artistas de Rock eu mais cataloguei?".</div>
+                        </div>
+                        <div id="chatInputContainer" class="flex gap-2">
+                            <input type="text" id="chatInput" class="input-field flex-grow" placeholder="Digite sua pergunta...">
+                            <button id="sendChatMessageBtn" class="btn btn-primary-action">
+                                <span class="button-text">Enviar</span>
+                                <div class="loading-spinner button-loader hidden"></div>
+                                <i class="fas fa-paper-plane ml-2 hidden"></i> 
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- End Chat Section -->
+            </div>
+        </main>
+    </div> 
+    
+    <!-- All modals remain the same -->
+    <div id="recordModal" class="modal">
+        <div class="modal-content max-w-xl">
+            <div class="flex justify-between items-start mb-6">
+                <h3 id="modalTitle" class="text-2xl font-poppins font-semibold text-textLightHeading">Adicionar Novo Registro</h3>
+                <button id="closeModalBtn" class="text-textLightMuted hover:text-dangerAction -mt-1 -mr-1">
+                    <i class="fas fa-times fa-xl"></i>
+                </button>
+            </div>
+
+            <div class="modal-content-body">
+                <form id="recordForm">
+                    <input type="hidden" id="recordId">
+                    <div class="mb-4">
+                        <label for="albumLink" class="label-text">Link do Álbum (Spotify)</label>
+                        <div class="flex gap-2">
+                            <input type="url" id="albumLink" class="input-field flex-grow" placeholder="Cole o link do álbum do Spotify aqui">
+                            <button type="button" id="fetchAlbumDataBtn" class="btn btn-secondary-action px-3">
+                                <i class="fas fa-search mr-1 sm:mr-2"></i>
+                                <span class="hidden sm:inline button-text">Buscar</span>
+                                <div class="loading-spinner button-loader hidden !w-4 !h-4"></div>
+                            </button>
+                        </div>
+                        <p id="linkFetchStatus" class="text-sm mt-1 h-5"></p>
+                    </div>
+                    <div class="grid grid-cols-1 gap-y-4 mb-6">
+                        <div><label for="autor" class="label-text">Autor</label><input type="text" id="autor" class="input-field" required placeholder="Ex: Daft Punk"></div>
+                        <div><label for="album" class="label-text">Álbum</label><input type="text" id="album" class="input-field" required placeholder="Ex: Random Access Memories"></div>
+                        <div><label for="dataLancamento" class="label-text">Data de Lançamento</label><input type="date" id="dataLancamento" class="input-field" required></div>
+                        <div><label for="genero" class="label-text">Gênero</label><input type="text" id="genero" class="input-field" required placeholder="Ex: Electronic, Funk, Disco"></div>
+                        <div><label for="notaAlbum" class="label-text">Nota do Álbum (0-10)</label><input type="number" id="notaAlbum" class="input-field" min="0" max="10" step="0.1" required placeholder="Ex: 9.8"></div>
+                        <div><label for="notaCapa" class="label-text">Nota da Capa (0-10)</label><input type="number" id="notaCapa" class="input-field" min="0" max="10" step="0.1" required placeholder="Ex: 9.0"></div>
+                        <div><label for="pais" class="label-text">País</label><input type="text" id="pais" class="input-field" required placeholder="Ex: França"></div>
+                    </div>
+                    <p id="formError" class="text-dangerAction text-sm mb-4 text-center h-6"></p>
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+                        <button type="button" id="cancelRecordBtn" class="btn btn-gray w-full sm:w-auto">Cancelar</button>
+                        <button type="submit" id="saveRecordBtn" class="btn btn-primary-action w-full sm:w-auto">
+                            <span class="button-text">Salvar</span>
+                            <div class="loading-spinner button-loader hidden"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+     <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content max-w-md">
+             <div class="flex justify-between items-start mb-4">
+                <h3 class="text-2xl font-poppins font-semibold text-dangerAction">Confirmar Exclusão</h3>
+                 <button id="closeDeleteConfirmModalBtn" class="text-textLightMuted hover:text-dangerAction -mt-1 -mr-1"><i class="fas fa-times fa-xl"></i></button>
+            </div>
+            <p id="deleteSingleMessage" class="mb-6 text-textLightBody">Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita! 😢</p>
+            <p id="deleteMultipleMessage" class="mb-6 text-textLightBody hidden">Tem certeza que deseja excluir os <span id="deleteCount"></span> registros selecionados? Esta ação não pode ser desfeita! 😢</p>
+            <p id="deleteError" class="text-dangerAction text-sm mb-4 text-center h-6"></p> 
+            <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+                <button type="button" id="cancelDeleteBtn" class="btn btn-gray w-full sm:w-auto">Não, cancelar!</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger w-full sm:w-auto">
+                    <span class="button-text">Sim, excluir</span>
+                    <div class="loading-spinner button-loader hidden"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="importSheetModal" class="modal">
+        <div class="modal-content max-w-2xl h-full max-h-[85vh]"> 
+            <div class="flex justify-between items-start mb-6">
+                <h3 id="importModalTitle" class="text-2xl font-poppins font-semibold text-textLightHeading">Importar Planilha</h3>
+                <button id="closeImportModalBtn" class="text-textLightMuted hover:text-dangerAction -mt-1 -mr-1">
+                    <i class="fas fa-times fa-xl"></i>
+                </button>
+            </div>
+            <div class="modal-content-body">
+                <div id="importFileSelectionSection" class="mb-6"> <label for="sheetFile" class="file-input-label w-full">
+                        <i class="fas fa-file-excel mr-2"></i> Escolher Arquivo (.xlsx, .csv, .xls)
+                    </label>
+                    <input type="file" id="sheetFile" class="hidden" accept=".xlsx, .xls, .csv, .ods, .xlsm, .xlsb, .xltx">
+                    <p id="importFileName" class="text-sm mt-2"></p>
+                </div>
+
+                <div id="columnMappingSection" class="hidden">
+                    <h4 class="text-lg font-semibold mb-3 text-textLightHeading">Mapear Colunas</h4>
+                    <p class="text-sm text-textLightMuted mb-4">
+                        Selecione qual coluna da sua planilha corresponde a cada campo do VINILY.
+                        Campos não mapeados ou vazios serão preenchidos com "NA".
+                    </p>
+                    <div id="columnMappingsContainer" class="column-mapping-grid">
+                    </div>
+                </div>
+                
+                <div id="importProgressSection" class="hidden mt-6">
+                    <h4 class="text-lg font-semibold mb-2 text-textLightHeading">Progresso da Importação</h4>
+                    <div id="importProgressBarContainer">
+                        <div id="importProgressBar" style="width: 0%;">0%</div>
+                    </div>
+                    <p id="importStatusMessage" class="text-sm mt-2 text-center"></p>
+                </div>
+            </div>
+
+            <div id="importModalFooter" class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 mt-auto border-t border-borderLight dark:border-borderDark">
+                <button type="button" id="cancelImportBtn" class="btn btn-gray w-full sm:w-auto">
+                     <span class="button-text">Cancelar</span> </button>
+                <button type="button" id="startImportBtn" class="btn btn-primary-action w-full sm:w-auto" disabled>
+                    <span class="button-text">Iniciar Importação</span>
+                    <div class="loading-spinner button-loader hidden"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, setDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; 
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDR0swz5SHk20UsWnUSPb4F07ny7XRmQp8",
+            authDomain: "vinily-60608.firebaseapp.com",
+            projectId: "vinily-60608",
+            storageBucket: "vinily-60608.firebasestorage.app",
+            messagingSenderId: "279889587296",
+            appId: "1:279889587296:web:8d4156349640c31502a705",
+            measurementId: "G-KJ7FCNVFPP"
+        };
+        
+        const envAppId = (typeof __app_id === 'string' && __app_id.trim() !== "") ? __app_id.trim() : null;
+        const globalAppId = envAppId || 'vinily-css-pure-import-fallback-safer'; 
+
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        let currentUserId = null;
+        let musicRecords = []; 
+        let unsubscribeSnapshot = null; 
+        let currentSort = { column: 'createdAt', direction: 'desc' };
+        let recordToDeleteId = null; 
+        let sheetDataForImport = []; 
+        let sheetHeadersForImport = []; 
+        let selectedRecordIds = new Set(); 
+        let geminiChatHistory = []; // For Gemini chat
+
+        const DEFAULT_COLUMN_DEFINITIONS = [ 
+            { key: 'autor', label: 'Autor', defaultVisible: true, defaultWidth: '20%', textAlign: 'left' },
+            { key: 'album', label: 'Álbum', defaultVisible: true, defaultWidth: '25%', textAlign: 'left' },
+            { key: 'dataLancamento', label: 'Lançamento', defaultVisible: true, defaultWidth: '10%', textAlign: 'center' },
+            { key: 'genero', label: 'Gênero', defaultVisible: true, defaultWidth: '12%', textAlign: 'center' }, 
+            { key: 'notaAlbum', label: 'Nota Álbum', defaultVisible: true, defaultWidth: '8%', textAlign: 'center', isNumeric: true }, 
+            { key: 'notaCapa', label: 'Nota Capa', defaultVisible: true, defaultWidth: '8%', textAlign: 'center', isNumeric: true }, 
+            { key: 'pais', label: 'País', defaultVisible: true, defaultWidth: '10%', textAlign: 'center' }
+        ];
+        let columnSettings = DEFAULT_COLUMN_DEFINITIONS.map(col => ({ ...col, visible: col.defaultVisible }));
+
+
+        const ui = {
+        loginSection: document.getElementById('loginSection'),
+        registerSection: document.getElementById('registerSection'),
+        appContainer: document.getElementById('appContainer'), 
+        sidebar: document.getElementById('sidebar'),
+        sidebarOverlay: document.getElementById('sidebarOverlay'),
+        mobileMenuButton: document.getElementById('mobileMenuButton'),
+        sidebarUserName: document.getElementById('sidebarUserName'),
+        navDashboard: document.getElementById('navDashboard'),
+        navProfile: document.getElementById('navProfile'), 
+        navChatAI: document.getElementById('navChatAI'), 
+        userIdDisplaySidebar: document.getElementById('userIdDisplaySidebar'),
+        logoutBtnSidebar: document.getElementById('logoutBtnSidebar'),
+        mainContentTitle: document.getElementById('mainContentTitle'),
+        desktopActionIcons: document.getElementById('desktopActionIcons'),
+        mobileActionIcons: document.getElementById('mobileActionIcons'),
+        addRecordBtnHeader: document.getElementById('addRecordBtnHeader'),
+        importSheetBtnHeader: document.getElementById('importSheetBtnHeader'),
+        toggleFiltersBtnHeader: document.getElementById('toggleFiltersBtnHeader'),
+        columnVisibilityBtn: document.getElementById('columnVisibilityBtn'), 
+        columnVisibilityDropdown: document.getElementById('columnVisibilityDropdown'),
+        moreOptionsBtnHeader: document.getElementById('moreOptionsBtnHeader'),
+        moreOptionsDropdown: document.getElementById('moreOptionsDropdown'),
+        toggleFiltersMenuItem: document.getElementById('toggleFiltersMenuItem'),
+        columnVisibilityMenuItem: document.getElementById('columnVisibilityMenuItem'),
+        importSheetMenuItem: document.getElementById('importSheetMenuItem'),
+        themeToggleBtnMain: document.getElementById('themeToggleBtnMain'), 
+        appSectionContent: document.getElementById('appSectionContent'), 
+        profileSection: document.getElementById('profileSection'), 
+        chatSection: document.getElementById('chatSection'), 
+        chatMessagesContainer: document.getElementById('chatMessagesContainer'), 
+        chatInput: document.getElementById('chatInput'), 
+        sendChatMessageBtn: document.getElementById('sendChatMessageBtn'), 
+        generalStatsContainer: document.getElementById('generalStatsContainer'), 
+        totalAlbumsStat: document.getElementById('totalAlbumsStat'), 
+        averageAlbumRatingStat: document.getElementById('averageAlbumRatingStat'), 
+        topGenresChartContainer: document.getElementById('topGenresChartContainer'), 
+        topGenresList: document.getElementById('topGenresList'), 
+        albumsByDecadeChartContainer: document.getElementById('albumsByDecadeChartContainer'), 
+        albumsByDecadeList: document.getElementById('albumsByDecadeList'), 
+        avgRatingByDecadeChartContainer: document.getElementById('avgRatingByDecadeChartContainer'), 
+        topArtistsList: document.getElementById('topArtistsList'), 
+        topCountriesList: document.getElementById('topCountriesList'), 
+        ratingDistributionChartContainer: document.getElementById('ratingDistributionChartContainer'), 
+        profileNoDataMessage: document.getElementById('profileNoDataMessage'), 
+        recordsByYearMonthList: document.getElementById('recordsByYearMonthList'), 
+        filtersSection: document.getElementById('filtersSection'),
+        clearFiltersBtnContent: document.getElementById('clearFiltersBtnContent'),
+        searchInputContent: document.getElementById('searchInputContent'), 
+        filterReleaseDateContent: document.getElementById('filterReleaseDateContent'),
+        filterGenreContent: document.getElementById('filterGenreContent'),
+        filterCountryContent: document.getElementById('filterCountryContent'),
+        filterMinRatingAlbumContent: document.getElementById('filterMinRatingAlbumContent'),
+        filterMaxRatingAlbumContent: document.getElementById('filterMaxRatingAlbumContent'),
+        recordsTableBodyContent: document.getElementById('recordsTableBodyContent'),
+        loadingRowContent: document.getElementById('loadingRowContent'),
+        noRecordsRowContent: document.getElementById('noRecordsRowContent'),
+        loginForm: document.getElementById('loginForm'),
+        registerForm: document.getElementById('registerForm'),
+        showRegisterBtn: document.getElementById('showRegister'),
+        showLoginBtn: document.getElementById('showLogin'),
+        loginError: document.getElementById('loginError'),
+        registerError: document.getElementById('registerError'),
+        recordModal: document.getElementById('recordModal'),
+        closeModalBtn: document.getElementById('closeModalBtn'),
+        modalTitle: document.getElementById('modalTitle'),
+        recordFormEl: document.getElementById('recordForm'),
+        albumLinkInput: document.getElementById('albumLink'), 
+        fetchAlbumDataBtn: document.getElementById('fetchAlbumDataBtn'), 
+        linkFetchStatus: document.getElementById('linkFetchStatus'), 
+        cancelRecordBtn: document.getElementById('cancelRecordBtn'),
+        saveRecordBtn: document.getElementById('saveRecordBtn'),
+        recordIdInput: document.getElementById('recordId'),
+        formError: document.getElementById('formError'),
+        deleteConfirmModal: document.getElementById('deleteConfirmModal'),
+        closeDeleteConfirmModalBtn: document.getElementById('closeDeleteConfirmModalBtn'),
+        cancelDeleteBtn: document.getElementById('cancelDeleteBtn'),
+        confirmDeleteBtn: document.getElementById('confirmDeleteBtn'),
+        deleteError: document.getElementById('deleteError'), 
+        deleteSingleMessage: document.getElementById('deleteSingleMessage'), 
+        deleteMultipleMessage: document.getElementById('deleteMultipleMessage'), 
+        deleteCount: document.getElementById('deleteCount'), 
+        sunIconMain: document.querySelector('#themeToggleBtnMain .fa-sun'),
+        moonIconMain: document.querySelector('#themeToggleBtnMain .fa-moon'),
+        importSheetModal: document.getElementById('importSheetModal'),
+        closeImportModalBtn: document.getElementById('closeImportModalBtn'),
+        importFileSelectionSection: document.getElementById('importFileSelectionSection'), 
+        sheetFile: document.getElementById('sheetFile'),
+        importFileName: document.getElementById('importFileName'),
+        columnMappingSection: document.getElementById('columnMappingSection'),
+        columnMappingsContainer: document.getElementById('columnMappingsContainer'),
+        importProgressSection: document.getElementById('importProgressSection'),
+        importProgressBarContainer: document.getElementById('importProgressBarContainer'),
+        importProgressBar: document.getElementById('importProgressBar'),
+        importStatusMessage: document.getElementById('importStatusMessage'),
+        cancelImportBtn: document.getElementById('cancelImportBtn'),
+        startImportBtn: document.getElementById('startImportBtn'),
+        bulkActionsSection: document.getElementById('bulkActionsSection'), 
+        selectedCountDisplay: document.getElementById('selectedCountDisplay'), 
+        deleteSelectedBtn: document.getElementById('deleteSelectedBtn'), 
+        appLoader: document.getElementById('appLoader')
+    };
+
+        const APP_FIELDS_FOR_IMPORT = [ 
+            { key: 'autor', label: 'Autor', required: true },
+            { key: 'album', label: 'Álbum', required: true },
+            { key: 'dataLancamento', label: 'Data Lançamento', required: false }, 
+            { key: 'genero', label: 'Gênero', required: false },
+            { key: 'notaAlbum', label: 'Nota Álbum (0-10)', required: false, type: 'number' },
+            { key: 'notaCapa', label: 'Nota Capa (0-10)', required: false, type: 'number' },
+            { key: 'pais', label: 'País', required: false }
+        ];
+
+
+        const toggleButtonLoading = (button, isLoading) => { 
+            const textSpan = button.querySelector('.button-text');
+            const loaderDiv = button.querySelector('.button-loader');
+            button.disabled = isLoading;
+            if (textSpan) textSpan.classList.toggle('hidden', isLoading);
+            if (loaderDiv) loaderDiv.classList.toggle('hidden', !isLoading);
+        };
+        
+        function showRelevantSection(sectionElementToShow) { 
+            [ui.loginSection, ui.registerSection, ui.appContainer].forEach(s => {
+                s.classList.add('hidden');
+                s.style.display = 'none'; 
+            });
+            
+            sectionElementToShow.classList.remove('hidden');
+            if (sectionElementToShow === ui.appContainer || sectionElementToShow === ui.loginSection || sectionElementToShow === ui.registerSection) {
+                sectionElementToShow.style.display = 'flex';
+            } else {
+                 sectionElementToShow.style.display = 'block'; 
+            }
+        }
+
+
+        function setActiveSection(sectionId) {
+            // Esconde todas as seções e botões contextuais por padrão
+            ui.appSectionContent.classList.add('hidden');
+            ui.profileSection.classList.add('hidden');
+            ui.chatSection.classList.add('hidden');
+            ui.desktopActionIcons.classList.add('hidden'); 
+            ui.mobileActionIcons.classList.add('hidden');
+            ui.addRecordBtnHeader.classList.add('hidden');
+
+            // Remove a classe 'active' de todos os links da sidebar
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+
+            // Mostra a seção e ativa o link correto
+            if (sectionId === 'dashboard') {
+                ui.appSectionContent.classList.remove('hidden');
+                ui.navDashboard.classList.add('active');
+                ui.mainContentTitle.textContent = 'Seus Registros';
+                // Mostra os botões de ação para o dashboard
+                ui.desktopActionIcons.classList.remove('hidden'); 
+                ui.mobileActionIcons.classList.remove('hidden'); 
+                ui.addRecordBtnHeader.classList.remove('hidden');
+            } else if (sectionId === 'profile') {
+                ui.profileSection.classList.remove('hidden');
+                ui.navProfile.classList.add('active');
+                ui.mainContentTitle.textContent = 'Meu Perfil';
+                generateProfileStats(); 
+            } else if (sectionId === 'chat') { 
+                ui.chatSection.classList.remove('hidden');
+                ui.navChatAI.classList.add('active');
+                ui.mainContentTitle.textContent = 'Chat com IA';
+            } else if (sectionId === 'login') { 
+                showRelevantSection(ui.loginSection);
+                ui.mainContentTitle.textContent = 'Bem-vindo!'; 
+            }
+        }
+
+
+        function openModal(modalElement) { 
+            if (modalElement === ui.deleteConfirmModal && ui.deleteError) { 
+                ui.deleteError.textContent = '';
+            }
+            if (modalElement === ui.recordModal) { 
+                if(ui.formError) ui.formError.textContent = '';
+                if(ui.linkFetchStatus) ui.linkFetchStatus.textContent = ''; 
+                if(ui.albumLinkInput) ui.albumLinkInput.value = ''; 
+                toggleButtonLoading(ui.fetchAlbumDataBtn, false); 
+            }
+             if (modalElement === ui.importSheetModal) { 
+                ui.importFileSelectionSection.classList.remove('hidden'); 
+                ui.importFileName.textContent = 'Nenhum arquivo selecionado.';
+                ui.sheetFile.value = ''; 
+                ui.columnMappingSection.classList.add('hidden');
+                ui.columnMappingsContainer.innerHTML = '';
+                ui.importProgressSection.classList.add('hidden');
+                ui.importProgressBar.style.width = '0%';
+                ui.importProgressBar.textContent = '0%';
+                ui.importStatusMessage.textContent = '';
+                ui.startImportBtn.disabled = true;
+                ui.startImportBtn.classList.remove('hidden'); 
+                toggleButtonLoading(ui.startImportBtn, false); 
+                ui.cancelImportBtn.querySelector('.button-text').textContent = 'Cancelar'; 
+                ui.cancelImportBtn.disabled = false; 
+                sheetDataForImport = [];
+                sheetHeadersForImport = [];
+            }
+            modalElement.classList.add('active');
+            const firstFocusable = modalElement.querySelector('button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (firstFocusable) firstFocusable.focus();
+        }
+
+        function closeModal(modalElement) { 
+            modalElement.classList.remove('active');
+            if (modalElement === ui.recordModal) {
+                ui.formError.textContent = ''; 
+                ui.recordFormEl.reset();
+                ui.recordIdInput.value = '';
+                if(ui.linkFetchStatus) ui.linkFetchStatus.textContent = '';
+                if(ui.albumLinkInput) ui.albumLinkInput.value = '';
+                toggleButtonLoading(ui.fetchAlbumDataBtn, false); 
+            }
+            if (modalElement === ui.deleteConfirmModal && ui.deleteError) {
+                ui.deleteError.textContent = ''; 
+            }
+            if (modalElement === ui.importSheetModal) {
+                toggleButtonLoading(ui.startImportBtn, false); 
+            }
+        }
+        
+        // Modal close listeners
+        ui.closeModalBtn.addEventListener('click', () => closeModal(ui.recordModal));
+        ui.closeDeleteConfirmModalBtn.addEventListener('click', () => closeModal(ui.deleteConfirmModal));
+        ui.closeImportModalBtn.addEventListener('click', () => closeModal(ui.importSheetModal)); 
+        ui.cancelRecordBtn.addEventListener('click', () => closeModal(ui.recordModal));
+        ui.cancelDeleteBtn.addEventListener('click', () => { closeModal(ui.deleteConfirmModal); recordToDeleteId = null; });
+        ui.cancelImportBtn.addEventListener('click', () => closeModal(ui.importSheetModal));
+
+        [ui.recordModal, ui.deleteConfirmModal, ui.importSheetModal].forEach(modal => { 
+            modal.addEventListener('click', (event) => { if (event.target === modal) closeModal(modal); });
+        });
+        
+        ui.mobileMenuButton.addEventListener('click', () => {
+            ui.sidebar.classList.toggle('open');
+            ui.sidebarOverlay.classList.toggle('open');
+        });
+        ui.sidebarOverlay.addEventListener('click', () => {
+            ui.sidebar.classList.remove('open');
+            ui.sidebarOverlay.classList.remove('open');
+        });
+
+        function applyTheme(isDark) {
+            document.documentElement.classList.toggle('dark', isDark);
+            ui.sunIconMain.classList.toggle('hidden', isDark);
+            ui.moonIconMain.classList.toggle('hidden', !isDark);
+        }
+        ui.themeToggleBtnMain.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            applyTheme(isDark);
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (ui.appLoader) ui.appLoader.classList.add('hidden');
+            
+            if (user) {
+                const savedTheme = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+                
+                if (!isDark) {
+                  document.documentElement.classList.remove('dark');
+                }
+                applyTheme(isDark);
+
+                currentUserId = user.uid;
+                ui.sidebarUserName.textContent = user.email || 'Usuário'; 
+                ui.userIdDisplaySidebar.textContent = `UID: ${currentUserId.substring(0,6)}...`;
+                showRelevantSection(ui.appContainer); 
+                setActiveSection('dashboard');      
+                loadColumnSettings(); 
+                if (!unsubscribeSnapshot) {
+                    loadRecords();
+                }
+            } else {
+                document.documentElement.classList.add('dark');
+                applyTheme(true);
+                currentUserId = null;
+                showRelevantSection(ui.loginSection); 
+
+                if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+                musicRecords = []; 
+                selectedRecordIds.clear(); 
+                updateBulkActionUI(); 
+                renderTable(); 
+            }
+        });
+        
+        setPersistence(auth, browserLocalPersistence)
+            .then(async () => {
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (initialAuthToken && !auth.currentUser) {
+                    try { await signInWithCustomToken(auth, initialAuthToken); } 
+                    catch (error) { console.error("Custom token sign-in error:", error); showRelevantSection(ui.loginSection); }
+                } else if (!auth.currentUser) { 
+                    showRelevantSection(ui.loginSection);
+                }
+            })
+            .catch((error) => console.error("Persistence error:", error));
+
+        ui.loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            ui.loginError.textContent = '';
+            const email = ui.loginForm.loginEmail.value;
+            const password = ui.loginForm.loginPassword.value;
+            const button = ui.loginForm.querySelector('button[type="submit"]');
+            toggleButtonLoading(button, true);
+            try { await signInWithEmailAndPassword(auth, email, password); } 
+            catch (error) { ui.loginError.textContent = getFirebaseErrorMessage(error); } 
+            finally { toggleButtonLoading(button, false); }
+        });
+
+        ui.registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            ui.registerError.textContent = '';
+            const email = ui.registerForm.registerEmail.value;
+            const password = ui.registerForm.registerPassword.value;
+            const button = ui.registerForm.querySelector('button[type="submit"]');
+            toggleButtonLoading(button, true);
+            try { await createUserWithEmailAndPassword(auth, email, password); } 
+            catch (error) { ui.registerError.textContent = getFirebaseErrorMessage(error); } 
+            finally { toggleButtonLoading(button, false); }
+        });
+
+        ui.logoutBtnSidebar.addEventListener('click', async () => { 
+            try { await signOut(auth); } 
+            catch (error) { console.error("Sign out error:", error); }
+        });
+
+        ui.showRegisterBtn.addEventListener('click', () => { ui.loginError.textContent = ''; ui.registerError.textContent = ''; showRelevantSection(ui.registerSection); });
+        ui.showLoginBtn.addEventListener('click', () => { ui.loginError.textContent = ''; ui.registerError.textContent = ''; showRelevantSection(ui.loginSection); });
+
+        // Sidebar Navigation
+        ui.navDashboard.addEventListener('click', (e) => { e.preventDefault(); setActiveSection('dashboard'); });
+        ui.navProfile.addEventListener('click', (e) => { e.preventDefault(); setActiveSection('profile'); });
+        ui.navChatAI.addEventListener('click', (e) => { e.preventDefault(); setActiveSection('chat'); }); 
+
+
+        function getRecordsCollectionRef() { 
+            if (!currentUserId || String(currentUserId).trim() === "" ) {
+                console.error("getRecordsCollectionRef error: currentUserId is invalid.", { currentUserId });
+                return null;
+            }
+            if (!globalAppId || String(globalAppId).trim() === "") {
+                console.error("getRecordsCollectionRef error: globalAppId is invalid.", { globalAppId });
+                return null;
+            }
+            return collection(db, "artifacts", globalAppId, "users", currentUserId, "musicEntries");
+        }
+        
+
+
+        ui.recordFormEl.addEventListener('submit', async (e) => { 
+            e.preventDefault();
+            ui.formError.textContent = '';
+            if (!currentUserId) { ui.formError.textContent = "Usuário não autenticado."; return; }
+
+            const recordData = {
+                autor: ui.recordFormEl.autor.value.trim(),
+                album: ui.recordFormEl.album.value.trim(),
+                dataLancamento: ui.recordFormEl.dataLancamento.value,
+                genero: ui.recordFormEl.genero.value.trim(),
+                notaAlbum: parseFloat(ui.recordFormEl.notaAlbum.value),
+                notaCapa: parseFloat(ui.recordFormEl.notaCapa.value),
+                pais: ui.recordFormEl.pais.value.trim(),
+            };
+
+            if (Object.values(recordData).some(val => typeof val === 'string' ? !val : isNaN(val))) {
+                ui.formError.textContent = "Todos os campos são obrigatórios."; return;
+            }
+            if (recordData.notaAlbum < 0 || recordData.notaAlbum > 10 || recordData.notaCapa < 0 || recordData.notaCapa > 10) {
+                ui.formError.textContent = "As notas devem ser entre 0 e 10."; return;
+            }
+
+            const id = ui.recordIdInput.value;
+            const recordsColRef = getRecordsCollectionRef();
+            if (!recordsColRef) { ui.formError.textContent = "Erro: Base de dados indisponível."; return; }
+
+            toggleButtonLoading(ui.saveRecordBtn, true);
+            try {
+                const dataToSave = { ...recordData, updatedAt: serverTimestamp() };
+                if (id) {
+                    await setDoc(doc(recordsColRef, id), dataToSave, { merge: true });
+                } else {
+                    await addDoc(recordsColRef, { ...dataToSave, createdAt: serverTimestamp() });
+                }
+                closeModal(ui.recordModal);
+            } catch (error) {
+                ui.formError.textContent = "Erro ao salvar: " + error.message;
+            } finally {
+                toggleButtonLoading(ui.saveRecordBtn, false);
+            }
+        });
+
+        function loadRecords() { 
+            if (!currentUserId || String(currentUserId).trim() === "" || !globalAppId || String(globalAppId).trim() === "") { 
+                console.error("loadRecords: Aborting due to invalid currentUserId or globalAppId.", { currentUserId, globalAppId });
+                ui.loadingRowContent.style.display = 'none';
+                ui.noRecordsRowContent.classList.remove('hidden');
+                if(ui.noRecordsRowContent.querySelector('td')) ui.noRecordsRowContent.querySelector('td').textContent = "Erro: Informações de usuário ou app inválidas.";
+                return;
+            }
+            if (unsubscribeSnapshot) { 
+                console.log("loadRecords: Unsubscribing from previous listener.");
+                unsubscribeSnapshot(); 
+                unsubscribeSnapshot = null;
+            }
+            
+            ui.loadingRowContent.style.display = ''; 
+            ui.noRecordsRowContent.classList.add('hidden');
+            const tableHead = ui.appContainer.querySelector('table thead');
+            if (tableHead) tableHead.innerHTML = ''; 
+            ui.recordsTableBodyContent.innerHTML = ''; 
+            ui.recordsTableBodyContent.appendChild(ui.loadingRowContent);
+
+            const recordsColRef = getRecordsCollectionRef();
+            if (!recordsColRef) {
+                ui.loadingRowContent.style.display = 'none';
+                ui.noRecordsRowContent.classList.remove('hidden');
+                ui.noRecordsRowContent.querySelector('td').textContent = "Erro crítico: Conexão com base de dados falhou.";
+                return;
+            }
+            
+            console.log("loadRecords: Setting up onSnapshot listener for path:", recordsColRef.path);
+            const q = query(recordsColRef, orderBy(currentSort.column, currentSort.direction));
+            unsubscribeSnapshot = onSnapshot(q, (querySnapshot) => {
+                console.log("onSnapshot received data:", querySnapshot.size, "documents");
+                musicRecords = querySnapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+                selectedRecordIds.clear(); 
+                updateBulkActionUI();
+                populateFilterDropdowns();
+                renderTable(); 
+                 if (document.getElementById('profileSection') && !document.getElementById('profileSection').classList.contains('hidden')) {
+                    generateProfileStats(); 
+                }
+            }, (error) => {
+                console.error("Real-time loading error:", error);
+                ui.loadingRowContent.style.display = 'none';
+                ui.noRecordsRowContent.classList.remove('hidden');
+                ui.noRecordsRowContent.querySelector('td').textContent = "Ops! Falha ao buscar músicas. Verifique as permissões e a conexão.";
+            });
+        }
+        
+        function reQueryRecords() { 
+            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+            loadRecords();
+        }
+
+        function renderTable() { 
+            const tableHead = ui.appContainer.querySelector('table thead');
+             if (!tableHead) { 
+                console.error("Table head element not found in renderTable.");
+                return;
+            }
+            tableHead.innerHTML = ''; 
+            ui.recordsTableBodyContent.innerHTML = ''; 
+            ui.loadingRowContent.style.display = 'none'; 
+
+            const headerRow = tableHead.insertRow();
+            const selectAllTh = document.createElement('th');
+            selectAllTh.className = 'table-header px-2 w-12 text-center';
+            const selectAllCheckbox = document.createElement('input');
+            selectAllCheckbox.type = 'checkbox';
+            selectAllCheckbox.id = 'selectAllCheckbox'; 
+            selectAllCheckbox.className = 'table-checkbox';
+            selectAllCheckbox.addEventListener('change', handleSelectAllChange); 
+            selectAllTh.appendChild(selectAllCheckbox);
+            headerRow.appendChild(selectAllTh);
+
+            let visibleColumnCount = 0;
+            columnSettings.forEach(col => {
+                if (col.visible) {
+                    const th = document.createElement('th');
+                    th.className = `table-header table-header-sortable group col-${col.key}`;
+                    if (col.textAlign === 'center') {
+                        th.classList.add('text-center');
+                    }
+                    th.dataset.sort = col.key;
+                    th.style.width = col.defaultWidth; 
+                    th.innerHTML = `${col.label} <span class="sort-icon-container"><i class="fas fa-sort"></i><i class="fas fa-sort-up"></i><i class="fas fa-sort-down"></i></span>`;
+                    th.addEventListener('click', handleSortClick);
+                    headerRow.appendChild(th);
+                    visibleColumnCount++;
+                }
+            });
+            const actionsTh = document.createElement('th');
+            actionsTh.className = 'table-header text-center';
+            actionsTh.style.width = '12%'; 
+            actionsTh.textContent = 'Ações';
+            headerRow.appendChild(actionsTh);
+            
+            const colspanValue = 2 + visibleColumnCount; 
+            ui.loadingRowContent.querySelector('td').colSpan = colspanValue;
+            ui.noRecordsRowContent.querySelector('td').colSpan = colspanValue;
+
+
+            const hasActiveFilters = [ui.searchInputContent, ui.filterReleaseDateContent, ui.filterGenreContent, ui.filterCountryContent, ui.filterMinRatingAlbumContent, ui.filterMaxRatingAlbumContent].some(el => el.value);
+
+            if (musicRecords.length === 0 && !hasActiveFilters) {
+                ui.noRecordsRowContent.classList.remove('hidden');
+                ui.noRecordsRowContent.querySelector('td').innerHTML = `<i class="fas fa-compact-disc fa-3x mb-3 text-gray-400"></i><br><span class="text-lg">Nenhum registro encontrado.</span><br>Use o menu lateral para adicionar o primeiro!`;
+                ui.recordsTableBodyContent.appendChild(ui.noRecordsRowContent);
+                const currentSelectAllCheckbox = document.getElementById('selectAllCheckbox');
+                if(currentSelectAllCheckbox) { 
+                    currentSelectAllCheckbox.checked = false;
+                    currentSelectAllCheckbox.indeterminate = false;
+                }
+                updateBulkActionUI();
+                return;
+            }
+            ui.noRecordsRowContent.classList.add('hidden');
+
+            const searchTerm = ui.searchInputContent.value.toLowerCase().trim(); 
+            const releaseDate = ui.filterReleaseDateContent.value;
+            const genre = ui.filterGenreContent.value;
+            const country = ui.filterCountryContent.value;
+            const minRating = parseFloat(ui.filterMinRatingAlbumContent.value);
+            const maxRating = parseFloat(ui.filterMaxRatingAlbumContent.value);
+
+            const displayRecords = musicRecords.filter(record => 
+                (searchTerm === '' || Object.values(record).some(val => String(val).toLowerCase().includes(searchTerm))) &&
+                (releaseDate === '' || record.dataLancamento === releaseDate) &&
+                (genre === '' || record.genero === genre) &&
+                (country === '' || record.pais === country) &&
+                (isNaN(minRating) || record.notaAlbum >= minRating) &&
+                (isNaN(maxRating) || record.notaAlbum <= maxRating)
+            );
+            
+            updateSortIcons(); 
+
+            if (displayRecords.length === 0) {
+                 ui.noRecordsRowContent.classList.remove('hidden');
+                 ui.noRecordsRowContent.querySelector('td').innerHTML = `<i class="fas fa-filter fa-3x mb-3 text-gray-400"></i><br><span class="text-lg">Nenhum registro corresponde aos filtros.</span><br>Tente ajustá-los.`;
+                 ui.recordsTableBodyContent.appendChild(ui.noRecordsRowContent);
+                 const currentSelectAllCheckbox = document.getElementById('selectAllCheckbox');
+                 if(currentSelectAllCheckbox) {
+                    currentSelectAllCheckbox.checked = false;
+                    currentSelectAllCheckbox.indeterminate = false;
+                 }
+                 updateBulkActionUI(); 
+                 return;
+            }
+
+            displayRecords.forEach(record => {
+                const row = ui.recordsTableBodyContent.insertRow();
+                
+                const checkboxCell = row.insertCell();
+                checkboxCell.className = 'px-2 w-12 text-center';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'table-checkbox record-checkbox';
+                checkbox.dataset.id = record.id;
+                checkbox.checked = selectedRecordIds.has(record.id);
+                checkbox.addEventListener('change', handleRowCheckboxChange);
+                checkboxCell.appendChild(checkbox);
+
+                columnSettings.forEach(col => {
+                    if (col.visible) {
+                        const cell = row.insertCell();
+                        cell.className = `col-${col.key}`; 
+                        if (col.textAlign === 'center') {
+                            cell.classList.add('text-center');
+                        }
+                        cell.style.width = col.defaultWidth; 
+                        const contentWrapper = document.createElement('div');
+                        contentWrapper.className = 'truncate-text';
+                        
+                        let cellValue = record[col.key] || '-';
+                        if (col.key === 'dataLancamento' && record[col.key]) {
+                            const parts = record[col.key].split('-');
+                            if (parts.length === 3) cellValue = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                        } else if (col.isNumeric && typeof record[col.key] === 'number') {
+                            cellValue = record[col.key].toFixed(1);
+                        }
+                        contentWrapper.textContent = cellValue;
+                        cell.appendChild(contentWrapper);
+                    }
+                });
+
+                const actionsCell = row.insertCell();
+                actionsCell.classList.add('text-center', 'space-x-1-5');
+                actionsCell.style.width = '12%'; 
+                const editBtn = document.createElement('button');
+                editBtn.innerHTML = '<i class="fas fa-edit fa-fw"></i>'; editBtn.title = "Editar";
+                editBtn.className = 'btn btn-table-action text-secondaryAction'; 
+                editBtn.onclick = () => editRecord(record.id); actionsCell.appendChild(editBtn);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '<i class="fas fa-trash fa-fw"></i>'; deleteBtn.title = "Excluir";
+                deleteBtn.className = 'btn btn-table-action text-dangerAction';
+                deleteBtn.onclick = () => confirmDeletion(record.id); actionsCell.appendChild(deleteBtn);
+            });
+            updateSelectAllCheckboxState();
+            updateBulkActionUI();
+        }
+        
+        function handleSortClick(event) {
+            const header = event.currentTarget;
+            const column = header.dataset.sort;
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+            reQueryRecords(); 
+        }
+
+        function editRecord(id) { 
+            const record = musicRecords.find(r => r.id === id);
+            if (record) {
+                ui.recordFormEl.reset(); 
+                if(ui.albumLinkInput) ui.albumLinkInput.value = ''; 
+                if(ui.linkFetchStatus) ui.linkFetchStatus.textContent = '';
+                ui.recordIdInput.value = record.id;
+                ui.recordFormEl.autor.value = record.autor; ui.recordFormEl.album.value = record.album;
+                ui.recordFormEl.dataLancamento.value = record.dataLancamento; ui.recordFormEl.genero.value = record.genero;
+                ui.recordFormEl.notaAlbum.value = record.notaAlbum; ui.recordFormEl.notaCapa.value = record.notaCapa;
+                ui.recordFormEl.pais.value = record.pais;
+                ui.modalTitle.textContent = 'Editar Registro Musical';
+                ui.saveRecordBtn.querySelector('.button-text').textContent = 'Atualizar Registro';
+                ui.formError.textContent = ''; openModal(ui.recordModal);
+            }
+        }
+
+        function confirmDeletion(id, isBulk = false) { 
+            recordToDeleteId = isBulk ? null : id; 
+            if(ui.deleteError) ui.deleteError.textContent = ''; 
+
+            if (isBulk) {
+                ui.deleteSingleMessage.classList.add('hidden');
+                ui.deleteMultipleMessage.classList.remove('hidden');
+                ui.deleteCount.textContent = selectedRecordIds.size;
+            } else {
+                ui.deleteSingleMessage.classList.remove('hidden');
+                ui.deleteMultipleMessage.classList.add('hidden');
+            }
+            openModal(ui.deleteConfirmModal); 
+        }
+        
+        ui.confirmDeleteBtn.addEventListener('click', async () => { 
+            const idsToDeleteArray = recordToDeleteId ? [recordToDeleteId] : Array.from(selectedRecordIds);
+            if (idsToDeleteArray.length === 0) {
+                if(ui.deleteError) ui.deleteError.textContent = "Nenhum item selecionado para excluir.";
+                return;
+            }
+
+            if (currentUserId) {
+                const recordsColRef = getRecordsCollectionRef();
+                if (!recordsColRef) { 
+                    console.error("Deletion error: Collection ref not found."); 
+                    if(ui.deleteError) ui.deleteError.textContent = "Erro ao conectar com a base de dados.";
+                    return; 
+                }
+                toggleButtonLoading(ui.confirmDeleteBtn, true);
+                const BATCH_DELETE_SIZE = 400;
+                let allSucceeded = true;
+
+                try {
+                    for (let i = 0; i < idsToDeleteArray.length; i += BATCH_DELETE_SIZE) {
+                        const batch = writeBatch(db);
+                        const chunk = idsToDeleteArray.slice(i, i + BATCH_DELETE_SIZE);
+                        chunk.forEach(id => {
+                            batch.delete(doc(recordsColRef, id));
+                        });
+                        await batch.commit();
+                        console.log(`Batch of ${chunk.length} items deleted.`);
+                    }
+                    selectedRecordIds.clear();
+                    updateBulkActionUI();
+                } 
+                catch (error) { 
+                    allSucceeded = false;
+                    console.error("Deletion error:", error); 
+                    if(ui.deleteError) ui.deleteError.textContent = "Erro ao excluir: " + error.message;
+                } 
+                finally { 
+                    toggleButtonLoading(ui.confirmDeleteBtn, false); 
+                    if(allSucceeded) closeModal(ui.deleteConfirmModal); 
+                    recordToDeleteId = null; 
+                }
+            }
+        });
+        
+        // --- BULK ACTIONS ---
+        function handleRowCheckboxChange(event) {
+            const recordId = event.target.dataset.id;
+            if (event.target.checked) {
+                selectedRecordIds.add(recordId);
+            } else {
+                selectedRecordIds.delete(recordId);
+            }
+            updateSelectAllCheckboxState();
+            updateBulkActionUI();
+        }
+        
+        function handleSelectAllChange(event) { 
+            const isChecked = event.target.checked;
+            const checkboxes = document.querySelectorAll('.record-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+                const recordId = checkbox.dataset.id;
+                if (isChecked) {
+                    selectedRecordIds.add(recordId);
+                } else {
+                    selectedRecordIds.delete(recordId);
+                }
+            });
+            updateBulkActionUI();
+        }
+
+
+        function updateSelectAllCheckboxState() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox'); 
+            if (!selectAllCheckbox) return;
+
+            const checkboxes = document.querySelectorAll('.record-checkbox');
+            const totalVisible = checkboxes.length;
+            if (totalVisible === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+                return;
+            }
+            const totalSelected = Array.from(checkboxes).filter(cb => cb.checked).length;
+
+            if (totalSelected === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (totalSelected === totalVisible) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+        
+        function updateBulkActionUI() {
+            const count = selectedRecordIds.size;
+            if (count > 0) {
+                ui.bulkActionsSection.classList.remove('hidden');
+                ui.selectedCountDisplay.textContent = `${count} item${count > 1 ? 's' : ''} selecionado${count > 1 ? 's' : ''}`;
+            } else {
+                ui.bulkActionsSection.classList.add('hidden');
+            }
+        }
+
+        ui.deleteSelectedBtn.addEventListener('click', () => {
+            if (selectedRecordIds.size > 0) {
+                confirmDeletion(null, true); 
+            }
+        });
+        // --- END BULK ACTIONS ---
+
+
+        function applyFiltersAndRender() { 
+            selectedRecordIds.clear(); 
+            updateBulkActionUI();
+            renderTable(); 
+        }
+        [ui.searchInputContent, ui.filterReleaseDateContent, ui.filterGenreContent, ui.filterCountryContent, ui.filterMinRatingAlbumContent, ui.filterMaxRatingAlbumContent].forEach(el => {
+            const eventType = (el.tagName === 'SELECT' || el.type === 'date') ? 'change' : 'input';
+            el.addEventListener(eventType, applyFiltersAndRender);
+        });
+
+        ui.searchInputContent.addEventListener('input', () => { 
+            // This is a good place to sync with a header search input if it existed.
+        });
+
+        ui.clearFiltersBtnContent.addEventListener('click', () => {
+            [ui.searchInputContent, ui.filterReleaseDateContent, ui.filterMinRatingAlbumContent, ui.filterMaxRatingAlbumContent].forEach(el => el.value = '');
+            [ui.filterGenreContent, ui.filterCountryContent].forEach(el => el.selectedIndex = 0);
+            applyFiltersAndRender();
+        });
+        
+        function populateFilterDropdowns() {
+            const createOptions = (selectElement, items) => {
+                const currentValue = selectElement.value;
+                selectElement.innerHTML = `<option value="">Todos os ${selectElement === ui.filterGenreContent ? 'Gêneros' : 'Países'}</option>`;
+                [...new Set(items.map(item => item).filter(Boolean))].sort((a,b) => a.localeCompare(b)).forEach(item => {
+                    const option = document.createElement('option'); option.value = item; option.textContent = item; selectElement.appendChild(option);
+                });
+                selectElement.value = currentValue;
+            };
+            createOptions(ui.filterGenreContent, musicRecords.map(r => r.genero));
+            createOptions(ui.filterCountryContent, musicRecords.map(r => r.pais));
+        }
+        
+        function updateSortIcons() { 
+            document.querySelectorAll('.table-header-sortable').forEach(header => {
+                const column = header.dataset.sort;
+                header.classList.remove('sorted-asc', 'sorted-desc', 'sorted');
+                const upIcon = header.querySelector('.fa-sort-up'); const downIcon = header.querySelector('.fa-sort-down'); const baseIcon = header.querySelector('.fa-sort');
+                if (upIcon && downIcon && baseIcon) { // Ensure icons exist
+                    [upIcon, downIcon, baseIcon].forEach(i => i.style.display = 'none');
+                    if (currentSort.column === column) {
+                        header.classList.add('sorted');
+                        if (currentSort.direction === 'asc') { header.classList.add('sorted-asc'); upIcon.style.display = 'inline-block'; } 
+                        else { header.classList.add('sorted-desc'); downIcon.style.display = 'inline-block'; }
+                    } else { baseIcon.style.display = 'inline-block'; }
+                }
+            });
+        }
+        
+
+        function getFirebaseErrorMessage(error) { 
+            switch (error.code) {
+                case 'auth/invalid-email': return 'Formato de e-mail inválido.';
+                case 'auth/user-not-found': return 'Usuário não encontrado.';
+                case 'auth/wrong-password': return 'Senha incorreta.';
+                case 'auth/email-already-in-use': return 'Este e-mail já está em uso.';
+                case 'auth/weak-password': return 'A senha precisa ter no mínimo 6 caracteres.';
+                case 'auth/network-request-failed': return 'Erro de rede. Verifique sua conexão.';
+                case 'auth/invalid-credential': return 'E-mail ou senha inválidos. Verifique seus dados e tente novamente.'; 
+                default: return `Ocorreu um erro. Tente novamente mais tarde.`; 
+            }
+        }
+        
+        // --- [CORREÇÃO] LÓGICA UNIFICADA E CORRIGIDA PARA DROPDOWNS DO CABEÇALHO ---
+
+        // Função para fechar todos os dropdowns abertos
+        const closeAllDropdowns = () => {
+            if (ui.moreOptionsDropdown) ui.moreOptionsDropdown.classList.add('hidden');
+            if (ui.columnVisibilityDropdown) ui.columnVisibilityDropdown.classList.add('hidden');
+        };
+
+        // Função para alternar a visibilidade de um dropdown específico
+        const toggleDropdown = (dropdownElement, event) => {
+            if (event) event.stopPropagation(); // Impede que o clique feche o menu imediatamente
+            const isCurrentlyHidden = dropdownElement.classList.contains('hidden');
+
+            // Primeiro, fecha todos os outros menus para garantir que apenas um esteja aberto
+            closeAllDropdowns();
+
+            // Se o menu clicado estava escondido, mostra-o.
+            // Se já estava aberto, a chamada a closeAllDropdowns() já o fechou.
+            if (isCurrentlyHidden) {
+                dropdownElement.classList.remove('hidden');
+            }
+        };
+
+        // Vincula as ações aos elementos corretos do HTML
+        // Botões que abrem os dropdowns
+        ui.moreOptionsBtnHeader.addEventListener('click', (e) => toggleDropdown(ui.moreOptionsDropdown, e));
+        ui.columnVisibilityBtn.addEventListener('click', (e) => toggleDropdown(ui.columnVisibilityDropdown, e));
+
+        // Item de menu que também abre o dropdown de colunas
+        ui.columnVisibilityMenuItem.addEventListener('click', (e) => {
+            e.preventDefault();
+            // A função toggleDropdown já lida com o fechamento do menu "Mais Opções" e abertura do de colunas.
+            toggleDropdown(ui.columnVisibilityDropdown, e);
+        });
+
+        // Funções de Ação (o que cada botão/item de menu faz)
+        const handleAddRecord = (e) => { e.preventDefault(); openModal(ui.recordModal); };
+        const handleImportSheet = (e) => { e.preventDefault(); openModal(ui.importSheetModal); };
+        const handleToggleFilters = (e) => { e.preventDefault(); ui.filtersSection.classList.toggle('hidden'); };
+
+        // Vincula as ações que NÃO abrem menus
+        ui.addRecordBtnHeader.addEventListener('click', handleAddRecord);
+        ui.importSheetBtnHeader.addEventListener('click', handleImportSheet);
+        ui.importSheetMenuItem.addEventListener('click', handleImportSheet);
+        ui.toggleFiltersBtnHeader.addEventListener('click', handleToggleFilters);
+        ui.toggleFiltersMenuItem.addEventListener('click', handleToggleFilters);
+
+        // Listener global para fechar os dropdowns ao clicar fora ou pressionar 'Escape'
+        document.addEventListener('click', (event) => {
+            // Se o clique não for em um botão que abre um menu ou dentro de um menu, fecha tudo.
+            const isClickInsideDropdown = ui.columnVisibilityDropdown.contains(event.target) || ui.moreOptionsDropdown.contains(event.target);
+            const isClickOnToggler = ui.columnVisibilityBtn.contains(event.target) || ui.moreOptionsBtnHeader.contains(event.target);
+            
+            if (!isClickInsideDropdown && !isClickOnToggler) {
+                closeAllDropdowns();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                // Fecha Modais
+                if (ui.recordModal.classList.contains('active')) closeModal(ui.recordModal);
+                if (ui.deleteConfirmModal.classList.contains('active')) closeModal(ui.deleteConfirmModal);
+                if (ui.importSheetModal.classList.contains('active')) closeModal(ui.importSheetModal);
+                
+                // Fecha qualquer dropdown que estiver aberto
+                closeAllDropdowns();
+            }
+        });
+
+        // --- FIM DA CORREÇÃO ---
+        
+        ui.sheetFile.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
+                ui.importFileName.textContent = 'Nenhum arquivo selecionado.';
+                ui.columnMappingSection.classList.add('hidden');
+                ui.startImportBtn.disabled = true;
+                return;
+            }
+            ui.importFileName.textContent = `Arquivo: ${file.name}`;
+            ui.importStatusMessage.textContent = '';
+            ui.importProgressSection.classList.add('hidden');
+            console.log("File selected:", file.name);
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    console.log("FileReader onload triggered.");
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'yyyy-mm-dd', codepage: 65001 }); 
+                    const firstSheetName = workbook.SheetNames[0];
+                    console.log("First sheet name:", firstSheetName);
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    sheetDataForImport = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: "" }); 
+                    console.log("Parsed sheet data (first 2 rows):", sheetDataForImport.slice(0,2));
+
+
+                    if (sheetDataForImport.length > 0 && sheetDataForImport[0].length > 0) {
+                        sheetHeadersForImport = sheetDataForImport[0].map(String); 
+                        console.log("Sheet headers:", sheetHeadersForImport);
+                        populateColumnMappingUI(sheetHeadersForImport);
+                        ui.columnMappingSection.classList.remove('hidden');
+                        ui.startImportBtn.disabled = false;
+                    } else {
+                        ui.importStatusMessage.textContent = 'Planilha vazia ou formato de cabeçalho inválido.';
+                        console.warn("Sheet data is empty or headers are invalid.");
+                        ui.columnMappingSection.classList.add('hidden');
+                        ui.startImportBtn.disabled = true;
+                    }
+                } catch (err) {
+                    console.error("Erro ao processar planilha:", err);
+                    ui.importStatusMessage.textContent = `Erro ao ler o arquivo: ${err.message || 'Formato inválido.'}`;
+                    ui.columnMappingSection.classList.add('hidden');
+                    ui.startImportBtn.disabled = true;
+                }
+            };
+            reader.onerror = (err) => {
+                 console.error("Erro no FileReader:", err);
+                 ui.importStatusMessage.textContent = `Erro ao carregar o arquivo.`;
+                 ui.columnMappingSection.classList.add('hidden');
+                 ui.startImportBtn.disabled = true;
+            }
+            reader.readAsArrayBuffer(file);
+        });
+
+        function populateColumnMappingUI(sheetHeaders) {
+            ui.columnMappingsContainer.innerHTML = ''; 
+            APP_FIELDS_FOR_IMPORT.forEach(appField => { 
+                const mappingItem = document.createElement('div');
+                mappingItem.className = 'mapping-item';
+
+                const label = document.createElement('label');
+                label.htmlFor = `map-${appField.key}`;
+                label.textContent = `${appField.label}${appField.required ? '*' : ''}:`;
+                
+                const select = document.createElement('select');
+                select.id = `map-${appField.key}`;
+                select.className = 'input-field';
+                select.dataset.appKey = appField.key;
+
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Não importar / Usar "NA"';
+                select.appendChild(defaultOption);
+
+                sheetHeaders.forEach((header, index) => {
+                    const option = document.createElement('option');
+                    option.value = header; 
+                    option.textContent = header || `Coluna ${index + 1}`;
+                    if (header.toLowerCase() === appField.key.toLowerCase() || header.toLowerCase() === appField.label.toLowerCase().split(' ')[0].toLowerCase()) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+                mappingItem.appendChild(label);
+                mappingItem.appendChild(select);
+                ui.columnMappingsContainer.appendChild(mappingItem);
+            });
+        }
+
+        ui.startImportBtn.addEventListener('click', async () => {
+            console.log("Start import button clicked.");
+            
+            if (!globalAppId || globalAppId.trim() === "") {
+                ui.importStatusMessage.textContent = 'Erro de configuração: ID da aplicação está faltando. Contate o suporte.';
+                console.error("Import error: globalAppId is null, undefined, or empty. Value:", globalAppId);
+                toggleButtonLoading(ui.startImportBtn, false);
+                return;
+            }
+            if (!currentUserId || currentUserId.trim() === "") {
+                ui.importStatusMessage.textContent = 'Erro: Usuário não autenticado ou ID de usuário inválido. Faça login novamente para importar.';
+                console.error("Import error: currentUserId is null, undefined, or empty. Value:", currentUserId);
+                toggleButtonLoading(ui.startImportBtn, false);
+                return;
+            }
+            
+            console.log("Pre-import check: Current User ID:", currentUserId, "App ID:", globalAppId);
+
+            if (sheetDataForImport.length <= 1) { 
+                ui.importStatusMessage.textContent = 'Nenhum dado para importar (sem contar o cabeçalho).';
+                toggleButtonLoading(ui.startImportBtn, false); 
+                return;
+            }
+
+            toggleButtonLoading(ui.startImportBtn, true);
+            ui.cancelImportBtn.disabled = true; 
+            ui.importProgressSection.classList.remove('hidden');
+            ui.importProgressBar.style.width = '0%';
+            ui.importProgressBar.textContent = '0%';
+            ui.importStatusMessage.textContent = 'Iniciando importação...';
+            console.log("Import process started after checks.");
+
+            const recordsColRef = getRecordsCollectionRef(); 
+            
+            if (!recordsColRef) { 
+                ui.importStatusMessage.textContent = 'Erro: Não foi possível determinar a coleção de destino. Verifique o login e a configuração.';
+                console.error("Failed to get records collection reference even after checks. Current User ID:", currentUserId, "App ID:", globalAppId);
+                toggleButtonLoading(ui.startImportBtn, false);
+                ui.cancelImportBtn.disabled = false; 
+                return;
+            }
+
+
+            const columnMap = {};
+            APP_FIELDS_FOR_IMPORT.forEach(appField => { 
+                const selectElement = document.getElementById(`map-${appField.key}`);
+                if (selectElement && selectElement.value) {
+                    const selectedSheetHeader = selectElement.value;
+                    const headerIndex = sheetHeadersForImport.indexOf(selectedSheetHeader);
+                    if (headerIndex !== -1) {
+                         columnMap[appField.key] = headerIndex;
+                    }
+                }
+            });
+            console.log("Column map:", columnMap);
+
+            const dataRows = sheetDataForImport.slice(1); 
+            const totalRows = dataRows.length;
+            let importedCount = 0;
+            let errorCount = 0;
+            const BATCH_SIZE = 100; 
+            console.log(`Total rows to import: ${totalRows}, Batch size: ${BATCH_SIZE}`);
+
+            try {
+                for (let i = 0; i < totalRows; i += BATCH_SIZE) {
+                    const batch = writeBatch(db);
+                    const chunk = dataRows.slice(i, i + BATCH_SIZE);
+                    console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}, rows ${i + 1} to ${Math.min(i + BATCH_SIZE, totalRows)}`);
+
+                    chunk.forEach((rowArray, rowIndexInChunk) => {
+                        const newRecord = {};
+                        APP_FIELDS_FOR_IMPORT.forEach(appField => { 
+                            let value = "NA"; 
+                            if (columnMap.hasOwnProperty(appField.key)) {
+                                const sheetColIndex = columnMap[appField.key];
+                                value = rowArray[sheetColIndex] !== undefined && rowArray[sheetColIndex] !== "" ? String(rowArray[sheetColIndex]).trim() : "NA";
+                            }
+                            
+                            if (appField.type === 'number') {
+                                const numValue = parseFloat(value);
+                                newRecord[appField.key] = !isNaN(numValue) ? numValue : 0; 
+                                if (appField.key === 'notaAlbum' || appField.key === 'notaCapa') {
+                                    if (newRecord[appField.key] < 0) newRecord[appField.key] = 0;
+                                    if (newRecord[appField.key] > 10) newRecord[appField.key] = 10;
+                                }
+                            } else if (appField.key === 'dataLancamento') {
+                                if (value instanceof Date) {
+                                    newRecord[appField.key] = value.toISOString().split('T')[0]; 
+                                } else if (value !== "NA" && value !== "") {
+                                    let parsedDate = new Date(value);
+                                    if (typeof value === 'number' && value > 25569) { 
+                                        parsedDate = new Date((value - 25569) * 86400 * 1000);
+                                    }
+                                    if (!isNaN(parsedDate.getTime())) {
+                                         newRecord[appField.key] = parsedDate.toISOString().split('T')[0];
+                                    } else {
+                                        newRecord[appField.key] = "NA"; 
+                                    }
+                                } else {
+                                    newRecord[appField.key] = "NA";
+                                }
+                            } else {
+                                newRecord[appField.key] = value;
+                            }
+                        });
+                        
+                        newRecord.createdAt = serverTimestamp();
+                        newRecord.updatedAt = serverTimestamp();
+                        
+                        const newDocRef = doc(recordsColRef); 
+                        batch.set(newDocRef, newRecord);
+                    });
+
+                    await batch.commit();
+                    importedCount += chunk.length;
+                    console.log(`Batch committed. Imported count: ${importedCount}`);
+                    
+                    const progress = Math.round((importedCount / totalRows) * 100);
+                    ui.importProgressBar.style.width = `${progress}%`;
+                    ui.importProgressBar.textContent = `${progress}%`;
+                    ui.importStatusMessage.textContent = `Processando... ${importedCount} de ${totalRows} importados.`;
+                }
+                ui.importStatusMessage.textContent = `Importação concluída! ${importedCount} registros importados. ${errorCount > 0 ? `${errorCount} falharam.` : ''}`;
+                console.log("Import process finished.");
+                loadRecords(); 
+            } catch (err) {
+                 console.error("Erro durante o processo de importação:", err);
+                 ui.importStatusMessage.textContent = `Erro crítico durante a importação: ${err.message}. Verifique o console.`;
+                 errorCount = totalRows - importedCount; 
+            } finally {
+                toggleButtonLoading(ui.startImportBtn, false);
+                ui.startImportBtn.classList.add('hidden'); 
+                ui.cancelImportBtn.disabled = false; 
+                ui.cancelImportBtn.querySelector('.button-text').textContent = 'Fechar'; 
+                ui.importFileSelectionSection.classList.add('hidden'); 
+                ui.columnMappingSection.classList.add('hidden'); 
+            }
+        });
+
+
+        // --- COLUMN VISIBILITY ---
+        function loadColumnSettings() {
+            const savedSettings = localStorage.getItem(`vinilyColumnSettings_${currentUserId}`);
+            let baseSettings = DEFAULT_COLUMN_DEFINITIONS.map(col => ({ ...col })); 
+
+            if (savedSettings) {
+                try {
+                    const parsedSavedVisibility = JSON.parse(savedSettings); 
+                    columnSettings = baseSettings.map(defaultCol => {
+                        return { 
+                            ...defaultCol, 
+                            visible: parsedSavedVisibility.hasOwnProperty(defaultCol.key) ? parsedSavedVisibility[defaultCol.key] : defaultCol.defaultVisible 
+                        };
+                    });
+                } catch (e) {
+                    console.error("Error parsing column visibility settings from localStorage", e);
+                    columnSettings = baseSettings.map(col => ({ ...col, visible: col.defaultVisible }));
+                }
+            } else {
+                columnSettings = baseSettings.map(col => ({ ...col, visible: col.defaultVisible }));
+            }
+            populateColumnVisibilityDropdown();
+        }
+
+        function saveColumnSettings() {
+            const settingsToSave = {};
+            columnSettings.forEach(col => {
+                settingsToSave[col.key] = col.visible;
+            });
+            localStorage.setItem(`vinilyColumnSettings_${currentUserId}`, JSON.stringify(settingsToSave));
+        }
+
+        function populateColumnVisibilityDropdown() {
+            ui.columnVisibilityDropdown.innerHTML = '';
+            columnSettings.forEach(col => {
+                const label = document.createElement('label');
+                label.className = 'block px-4 py-2 text-sm text-textLightBody dark:text-textDarkBody hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'mr-2 table-checkbox'; 
+                checkbox.checked = col.visible;
+                checkbox.dataset.columnKey = col.key;
+                checkbox.addEventListener('change', handleColumnVisibilityChange);
+                
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(col.label));
+                ui.columnVisibilityDropdown.appendChild(label);
+            });
+        }
+
+        function handleColumnVisibilityChange(event) {
+            const columnKey = event.target.dataset.columnKey;
+            const isVisible = event.target.checked;
+            const columnIndex = columnSettings.findIndex(col => col.key === columnKey);
+            if (columnIndex !== -1) {
+                columnSettings[columnIndex].visible = isVisible;
+                saveColumnSettings();
+                renderTable(); 
+            }
+        }
+
+        // --- END COLUMN VISIBILITY ---
+
+        // --- FETCH ALBUM DATA FROM LINK ---
+        ui.fetchAlbumDataBtn.addEventListener('click', async () => {
+            const albumUrl = ui.albumLinkInput.value.trim();
+            ui.linkFetchStatus.textContent = ''; 
+            ui.linkFetchStatus.style.color = 'var(--textLightMuted)';
+
+            if (!albumUrl) {
+                ui.linkFetchStatus.textContent = "Por favor, insira um link.";
+                ui.linkFetchStatus.style.color = 'var(--dangerAction)';
+                return;
+            }
+
+            let spotifyTrackOrAlbumUrl = '';
+            const spotifyRegex = /https?:\/\/open\.spotify\.com\/(track|album)\/([a-zA-Z0-9]+)/;
+            const match = albumUrl.match(spotifyRegex);
+
+            if (match && match[0]) {
+                spotifyTrackOrAlbumUrl = match[0];
+                 console.log("Valid Spotify URL detected:", spotifyTrackOrAlbumUrl);
+            } else {
+                ui.linkFetchStatus.textContent = "Link inválido ou não é do Spotify.";
+                ui.linkFetchStatus.style.color = 'var(--dangerAction)';
+                console.warn("Invalid or non-Spotify URL:", albumUrl);
+                return;
+            }
+            
+            ui.linkFetchStatus.textContent = "Buscando dados...";
+            toggleButtonLoading(ui.fetchAlbumDataBtn, true);
+            
+            const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyTrackOrAlbumUrl)}`;
+            console.log("Fetching from oEmbed:", oembedUrl); 
+            
+            try {
+                const response = await fetch(oembedUrl);
+                 console.log("oEmbed response status:", response.status);
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status} ao buscar dados. Verifique o link.`);
+                }
+                const data = await response.json();
+                console.log("Spotify oEmbed data:", data);
+
+                let artistName = data.author_name || '';
+                let titleFromOembed = data.title || '';
+                let albumTitle = '';
+
+                ui.recordFormEl.autor.value = '';
+                ui.recordFormEl.album.value = '';
+                ui.recordFormEl.dataLancamento.value = ''; 
+                ui.recordFormEl.genero.value = ''; 
+                ui.recordFormEl.pais.value = '';
+
+
+                if (data.type && (data.type.toLowerCase() === "album" || data.type.toLowerCase() === "track" || data.type.toLowerCase() === "rich")) { 
+                    albumTitle = titleFromOembed;
+                    if (artistName && albumTitle.includes(" - ")) {
+                        const parts = albumTitle.split(" - ");
+                        if (parts[0].toLowerCase() === artistName.toLowerCase()) {
+                            albumTitle = parts.slice(1).join(" - ");
+                        } else if (parts.length > 1 && parts[parts.length - 1].toLowerCase() === artistName.toLowerCase()) {
+                           albumTitle = parts.slice(0, -1).join(" - ");
+                        }
+                    }
+                } else {
+                     albumTitle = titleFromOembed; 
+                }
+
+
+                if (artistName) {
+                    ui.recordFormEl.autor.value = artistName;
+                }
+                if (albumTitle) {
+                    ui.recordFormEl.album.value = albumTitle;
+                }
+                
+                if (artistName || albumTitle) {
+                    let message = "Dados preenchidos! ";
+                    if (artistName) message += `Autor: ${artistName}. `;
+                    if (albumTitle) message += `Álbum: ${albumTitle}. `;
+                    message += "Data, Gênero e País precisam ser inseridos manualmente.";
+                    ui.linkFetchStatus.textContent = message;
+                    ui.linkFetchStatus.style.color = 'var(--secondaryAction)';
+                } else {
+                    ui.linkFetchStatus.textContent = "Não foi possível extrair dados de Autor ou Álbum do link.";
+                    ui.linkFetchStatus.style.color = 'var(--dangerAction)';
+                }
+
+            } catch (error) {
+                console.error("Erro ao buscar dados do Spotify oEmbed:", error);
+                ui.linkFetchStatus.textContent = "Erro ao buscar dados. Verifique o link ou tente novamente.";
+                ui.linkFetchStatus.style.color = 'var(--dangerAction)';
+            } finally {
+                toggleButtonLoading(ui.fetchAlbumDataBtn, false);
+            }
+        });
+        // --- END FETCH ALBUM DATA ---
+        
+        // --- PROFILE STATS ---
+        function getDecade(dateString) {
+            if (!dateString || typeof dateString !== 'string') return 'Desconhecida';
+            const year = parseInt(dateString.substring(0, 4), 10);
+            if (isNaN(year)) return 'Desconhecida';
+            return `${Math.floor(year / 10) * 10}s`;
+        }
+
+        function generateProfileStats() {
+            console.log("Generating profile stats with records:", musicRecords);
+            if (!musicRecords || musicRecords.length === 0) {
+                ui.profileNoDataMessage.classList.remove('hidden');
+                // Clear existing stats and charts
+                ui.totalAlbumsStat.textContent = '0';
+                ui.averageAlbumRatingStat.textContent = '-';
+                ['topGenresList', 'albumsByDecadeList', 'topArtistsList', 'topCountriesList', 'recordsByYearMonthList'].forEach(id => {
+                    if(ui[id]) ui[id].innerHTML = '';
+                });
+                ['topGenresChartContainer', 'albumsByDecadeChartContainer', 'avgRatingByDecadeChartContainer', 'ratingDistributionChartContainer'].forEach(id => {
+                    if(ui[id]) d3.select(`#${id}`).selectAll("*").remove();
+                });
+                return;
+            }
+            ui.profileNoDataMessage.classList.add('hidden');
+
+            // Total Records
+            ui.totalAlbumsStat.textContent = musicRecords.length;
+
+            // Average Album Rating
+            const validRatings = musicRecords.filter(r => typeof r.notaAlbum === 'number' && !isNaN(r.notaAlbum)).map(r => r.notaAlbum);
+            const avgRating = validRatings.length > 0 ? (validRatings.reduce((sum, rating) => sum + rating, 0) / validRatings.length).toFixed(1) : '-';
+            ui.averageAlbumRatingStat.textContent = avgRating;
+
+            const processCounts = (key, topN = 5) => {
+                const counts = {};
+                musicRecords.forEach(record => {
+                    const value = record[key];
+                    if (value && String(value).trim() !== "" && String(value).toLowerCase() !== "na") {
+                        counts[value] = (counts[value] || 0) + 1;
+                    }
+                });
+                return Object.entries(counts)
+                    .map(([name, count]) => ({ name, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, topN);
+            };
+            
+            const getDecadeCounts = (topN = 5) => {
+                const decadeCounts = {};
+                musicRecords.forEach(record => {
+                    const decade = getDecade(record.dataLancamento); // Based on album's release date
+                    if (decade !== 'Desconhecida') {
+                        decadeCounts[decade] = (decadeCounts[decade] || 0) + 1;
+                    }
+                });
+                 return Object.entries(decadeCounts)
+                    .map(([name, count]) => ({ name, count }))
+                    .sort((a,b) => b.count - a.count) 
+                    .slice(0, topN);
+            };
+
+
+            // Top Genres
+            const topGenres = processCounts('genero');
+            ui.topGenresList.innerHTML = topGenres.map(item => `<li class="profile-stat-item"><span class="profile-stat-label">${item.name}</span> <span class="profile-stat-value">${item.count}</span></li>`).join('');
+            if (topGenres.length > 0) drawBarChart('topGenresChartContainer', topGenres, 'Gênero', 'Quantidade');
+            else d3.select("#topGenresChartContainer").html("<p class='text-sm text-textLightMuted text-center'>Sem dados de gênero.</p>");
+
+
+            // Albums by Decade (based on album's release date)
+            const albumsByDecade = getDecadeCounts(10); 
+            const sortedAlbumsByDecade = [...albumsByDecade].sort((a,b) => parseInt(a.name) - parseInt(b.name)); 
+            ui.albumsByDecadeList.innerHTML = albumsByDecade.sort((a,b) => b.count - a.count).slice(0,5).map(item => `<li class="profile-stat-item"><span class="profile-stat-label">${item.name}</span> <span class="profile-stat-value">${item.count}</span></li>`).join('');
+            if (sortedAlbumsByDecade.length > 0) drawBarChart('albumsByDecadeChartContainer', sortedAlbumsByDecade, 'Década', 'Nº de Álbuns');
+            else d3.select("#albumsByDecadeChartContainer").html("<p class='text-sm text-textLightMuted text-center'>Sem dados de década.</p>");
+
+            // Average Rating by Decade (based on album's release date)
+            const ratingsByDecade = {};
+            musicRecords.forEach(record => {
+                const decade = getDecade(record.dataLancamento);
+                if (decade !== 'Desconhecida' && typeof record.notaAlbum === 'number' && !isNaN(record.notaAlbum)) {
+                    if (!ratingsByDecade[decade]) {
+                        ratingsByDecade[decade] = { sum: 0, count: 0 };
+                    }
+                    ratingsByDecade[decade].sum += record.notaAlbum;
+                    ratingsByDecade[decade].count++;
+                }
+            });
+            const avgRatingDecadeData = Object.entries(ratingsByDecade)
+                .map(([name, data]) => ({ name, count: parseFloat((data.sum / data.count).toFixed(1)) }))
+                .sort((a, b) => parseInt(a.name) - parseInt(b.name));
+            if (avgRatingDecadeData.length > 0) drawBarChart('avgRatingByDecadeChartContainer', avgRatingDecadeData, 'Década', 'Média de Nota'); 
+             else d3.select("#avgRatingByDecadeChartContainer").html("<p class='text-sm text-textLightMuted text-center'>Sem dados de nota por década.</p>");
+
+
+            // Top Artists
+            const topArtists = processCounts('autor', 10);
+            ui.topArtistsList.innerHTML = topArtists.map(item => `<li class="profile-stat-item"><span class="profile-stat-label">${item.name}</span> <span class="profile-stat-value">${item.count}</span></li>`).join('');
+            if(topArtists.length === 0) ui.topArtistsList.innerHTML = "<li class='text-sm text-textLightMuted text-center'>Sem dados de artista.</li>";
+
+            // Top Countries
+            const topCountries = processCounts('pais', 10);
+            ui.topCountriesList.innerHTML = topCountries.map(item => `<li class="profile-stat-item"><span class="profile-stat-label">${item.name}</span> <span class="profile-stat-value">${item.count}</span></li>`).join('');
+             if(topCountries.length === 0) ui.topCountriesList.innerHTML = "<li class='text-sm text-textLightMuted text-center'>Sem dados de país.</li>";
+
+            // Rating Distribution
+            const ratingCounts = {};
+            for (let i = 0; i <= 10; i++) ratingCounts[i.toFixed(1)] = 0; 
+            musicRecords.forEach(record => {
+                if (typeof record.notaAlbum === 'number' && !isNaN(record.notaAlbum)) {
+                    const rating = Math.round(record.notaAlbum * 10) / 10; 
+                    const ratingStr = rating.toFixed(1);
+                    if (ratingCounts.hasOwnProperty(ratingStr)) {
+                         ratingCounts[ratingStr]++;
+                    } else { 
+                        if(!ratingCounts[ratingStr]) ratingCounts[ratingStr] = 0;
+                        ratingCounts[ratingStr]++;
+                    }
+                }
+            });
+            const ratingDistributionData = Object.entries(ratingCounts)
+                .map(([name, count]) => ({ name, count }))
+                .filter(d => d.count > 0) 
+                .sort((a,b) => parseFloat(a.name) - parseFloat(b.name)); 
+            if (ratingDistributionData.length > 0) drawBarChart('ratingDistributionChartContainer', ratingDistributionData, 'Nota', 'Quantidade'); 
+            else d3.select("#ratingDistributionChartContainer").html("<p class='text-sm text-textLightMuted text-center'>Sem dados de notas.</p>");
+
+            // Records by Year/Month (using createdAt)
+            const recordsByYearMonth = {};
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            musicRecords.forEach(record => {
+                if (record.createdAt && typeof record.createdAt.toDate === 'function') { 
+                    try {
+                        const date = record.createdAt.toDate(); 
+                        if (!isNaN(date.getTime())) {
+                            const year = date.getFullYear();
+                            const month = date.getMonth(); // 0-11
+
+                            if (!recordsByYearMonth[year]) {
+                                recordsByYearMonth[year] = { total: 0, months: Array(12).fill(0) };
+                            }
+                            recordsByYearMonth[year].total++;
+                            recordsByYearMonth[year].months[month]++;
+                        }
+                    } catch (e) {
+                        console.warn("Error processing createdAt for record:", record.id, record.createdAt, e);
+                    }
+                } else {
+                     console.warn("Record missing createdAt or createdAt is not a Timestamp:", record.id, record);
+                }
+            });
+
+            ui.recordsByYearMonthList.innerHTML = ''; // Clear previous list
+            const sortedYears = Object.keys(recordsByYearMonth).sort((a, b) => b - a); // Sort years descending
+
+            if (sortedYears.length > 0) {
+                sortedYears.forEach(year => {
+                    const yearData = recordsByYearMonth[year];
+                    const yearLi = document.createElement('li');
+                    yearLi.className = 'year-item';
+                    
+                    const yearHeader = document.createElement('div');
+                    yearHeader.className = 'year-header';
+                    yearHeader.innerHTML = `
+                        <span>${year} (${yearData.total} ${yearData.total > 1 ? 'álbuns' : 'álbum'})</span>
+                        <i class="fas fa-chevron-right expand-icon"></i>
+                    `;
+                    
+                    const monthUl = document.createElement('ul');
+                    monthUl.className = 'month-list'; // Start visible by default
+                    
+                    yearData.months.forEach((count, monthIndex) => {
+                        if (count > 0) {
+                            const monthLi = document.createElement('li');
+                            monthLi.className = 'month-item';
+                            monthLi.innerHTML = `
+                                <span>${monthNames[monthIndex]}</span>
+                                <span class="profile-stat-value">${count}</span>
+                            `;
+                            monthUl.appendChild(monthLi);
+                        }
+                    });
+
+                    if (monthUl.children.length > 0) { 
+                        yearLi.appendChild(yearHeader);
+                        yearLi.appendChild(monthUl);
+                        ui.recordsByYearMonthList.appendChild(yearLi);
+                        
+                        // Initially hide months and set expanded to false
+                        monthUl.style.maxHeight = '0';
+                        monthUl.style.overflow = 'hidden';
+                        
+                        yearHeader.addEventListener('click', () => {
+                            const isExpanded = yearLi.classList.toggle('expanded');
+                            if (isExpanded) {
+                                monthUl.style.maxHeight = monthUl.scrollHeight + "px";
+                            } else {
+                                monthUl.style.maxHeight = '0';
+                            }
+                        });
+                    }
+                });
+            } else {
+                 ui.recordsByYearMonthList.innerHTML = "<li class='text-sm text-textLightMuted text-center'>Sem dados de registros por ano/mês.</li>";
+            }
+
+
+        }
+
+        function drawBarChart(containerId, data, xLabelText, yLabelText, titleText, isAvg = false, isRating = false) {
+            const container = d3.select(`#${containerId}`);
+            container.selectAll("*").remove(); 
+
+            if (!data || data.length === 0) {
+                 container.append("p")
+                    .attr("class", "text-sm text-textLightMuted dark:text-textDarkMuted text-center p-4")
+                    .text("Não há dados para exibir neste gráfico.");
+                return;
+            }
+            
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "chart-tooltip")
+                .style("opacity", 0);
+
+            const margin = {top: 40, right: 30, bottom: 70, left: 60},
+                width = container.node().getBoundingClientRect().width - margin.left - margin.right,
+                height = 300 - margin.top - margin.bottom;
+
+            const svg = container.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scaleBand()
+              .range([ 0, width ])
+              .domain(data.map(d => d.name))
+              .padding(0.2);
+            
+            svg.append("g")
+              .attr("transform", `translate(0,${height})`)
+              .call(d3.axisBottom(x))
+              .selectAll("text")
+                .attr("transform", "translate(-10,0)rotate(-45)")
+                .style("text-anchor", "end")
+                .style("fill", getComputedStyle(document.body).getPropertyValue(document.documentElement.classList.contains('dark') ? '--textDarkMuted' : '--textLightMuted'));
+
+            const yMax = isAvg ? 10 : d3.max(data, d => d.count);
+            const y = d3.scaleLinear()
+              .domain([0, yMax])
+              .range([ height, 0]);
+            svg.append("g")
+              .call(d3.axisLeft(y).ticks(isAvg || isRating ? 10 : Math.min(10, yMax)).tickFormat(d3.format(isAvg ? ".1f" : "d")))
+              .selectAll("text")
+                .style("fill", getComputedStyle(document.body).getPropertyValue(document.documentElement.classList.contains('dark') ? '--textDarkMuted' : '--textLightMuted'));
+
+
+            svg.selectAll("mybar")
+              .data(data)
+              .join("rect")
+                .attr("x", d => x(d.name))
+                .attr("y", d => y(d.count))
+                .attr("width", x.bandwidth())
+                .attr("height", d => height - y(d.count))
+                .attr("class", "bar")
+                .on("mouseover", (event, d) => {
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    tooltip.html(`<strong>${d.name}</strong><br/>${isAvg ? 'Média: ' : ''}${d.count}`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", () => {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                });
+            
+            svg.append("text")
+                .attr("text-anchor", "middle")
+                .attr("x", width / 2)
+                .attr("y", 0 - (margin.top / 2) + 10)
+                .attr("class", "text-base font-semibold text-textLightHeading dark:text-textDarkHeading")
+                .text(titleText);
+
+            svg.append("text") // X axis label
+                .attr("text-anchor", "middle")
+                .attr("x", width / 2)
+                .attr("y", height + margin.bottom - 5)
+                .attr("class", "text-xs text-textLightMuted dark:text-textDarkMuted")
+                .text(xLabelText);
+            
+            svg.append("text") // Y axis label
+                .attr("text-anchor", "middle")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left + 20)
+                .attr("x", 0 - (height / 2))
+                .attr("class", "text-xs text-textLightMuted dark:text-textDarkMuted")
+                .text(yLabelText);
+        }
+
+        // --- END PROFILE STATS ---
+         // --- CHAT WITH AI ---
+        ui.sendChatMessageBtn.addEventListener('click', handleSendMessage);
+        ui.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSendMessage();
+            }
+        });
+
+        async function handleSendMessage() {
+            const userQuestion = ui.chatInput.value.trim();
+            if (!userQuestion) return;
+
+            addMessageToChat(userQuestion, 'user');
+            ui.chatInput.value = '';
+            toggleButtonLoading(ui.sendChatMessageBtn, true);
+            addMessageToChat("Analisando seus registros e pensando...", 'ai', true); 
+
+
+            try {
+                const dataForAI = musicRecords.map(record => {
+                    let formattedDate = 'N/A';
+                    if (record.createdAt && typeof record.createdAt.toDate === 'function') {
+                        try {
+                            formattedDate = record.createdAt.toDate().toISOString().split('T')[0];
+                        } catch (e) { console.warn("Error converting createdAt to date:", e); }
+                    }
+                    return {
+                        album: record.album || "N/A",
+                        autor: record.autor || "N/A",
+                        genero: record.genero || "N/A",
+                        notaAlbum: (typeof record.notaAlbum === 'number' && !isNaN(record.notaAlbum)) ? record.notaAlbum : "N/A",
+                        pais: record.pais || "N/A",
+                        dataAdicao: formattedDate 
+                    };
+                });
+                // Send ALL records to the AI
+                const stringifiedMusicData = JSON.stringify(dataForAI); 
+
+                const currentYear = new Date().getFullYear();
+                const prompt = `
+                Você é o VINILY, um assistente especialista em análise de perfis musicais.
+                Sua tarefa é analisar os dados de registros musicais de um usuário e responder às perguntas dele de forma amigável, perspicaz e baseada nos dados.
+                O ano atual é ${currentYear}.
+                
+                Os dados dos registros musicais do usuário são fornecidos em formato JSON a seguir. Cada objeto na lista representa um álbum ou registro musical catalogado pelo usuário.
+                Os campos em cada registro são:
+                - "album": O nome do álbum.
+                - "autor": O nome do artista ou banda.
+                - "genero": O gênero musical do álbum.
+                - "notaAlbum": A nota que o usuário deu para o álbum (de 0 a 10).
+                - "pais": O país de origem do artista/álbum.
+                - "dataAdicao": A data em que o usuário adicionou este registro ao catálogo (formato AAAA-MM-DD). Use este campo para análises temporais como "este ano", "ano passado", "em 2023", etc.
+
+                Instruções importantes para suas respostas:
+                1. Baseie suas respostas EXCLUSIVAMENTE nos dados fornecidos em "Dados dos Registros Musicais".
+                2. Não invente informações ou estatísticas que não possam ser derivadas dos dados.
+                3. Se a pergunta não puder ser respondida com os dados fornecidos, informe educadamente que não possui informações suficientes para aquela análise específica.
+                4. Não mencione o formato JSON dos dados na sua resposta. Apenas use os dados para responder.
+                5. Seja conciso, direto ao ponto e use uma linguagem amigável.
+                6. Ao fazer comparações temporais (ex: "ano passado vs. este ano"), use a "dataAdicao" para determinar quando um registro foi catalogado.
+
+                Dados dos Registros Musicais:
+                ${stringifiedMusicData}
+
+                Pergunta do Usuário: ${userQuestion}`;
+                
+                const aiResponse = await fetchGeminiResponse(prompt);
+                removeAiThinkingMessage();
+                addMessageToChat(aiResponse, 'ai');
+            } catch (error) {
+                console.error("Error fetching AI response:", error);
+                removeAiThinkingMessage();
+                addMessageToChat("Desculpe, não consegui processar sua pergunta no momento. Tente novamente.", 'ai');
+            } finally {
+                toggleButtonLoading(ui.sendChatMessageBtn, false);
+            }
+        }
+        
+        function addMessageToChat(message, sender, isThinking = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('chat-message', sender);
+            if (isThinking) {
+                messageDiv.classList.add('ai-thinking'); 
+                messageDiv.innerHTML = `<div class="flex items-center">
+                                           <div class="loading-spinner !w-4 !h-4 mr-2"></div>
+                                           <span>${message}</span>
+                                       </div>`;
+            } else {
+                const sanitizedMessage = message.replace(/</g, "<").replace(/>/g, ">");
+                messageDiv.innerHTML = sanitizedMessage.replace(/\n/g, "<br>"); 
+            }
+            ui.chatMessagesContainer.appendChild(messageDiv);
+            ui.chatMessagesContainer.scrollTop = ui.chatMessagesContainer.scrollHeight; 
+        }
+
+        function removeAiThinkingMessage() {
+            const thinkingMessage = ui.chatMessagesContainer.querySelector('.ai-thinking');
+            if (thinkingMessage) {
+                thinkingMessage.remove();
+            }
+        }
+
+
+        async function fetchGeminiResponse(promptText) {
+            geminiChatHistory = []; 
+            geminiChatHistory.push({ role: "user", parts: [{ text: promptText }] });
+            
+            const payload = { contents: geminiChatHistory };
+            // PARA TESTE LOCAL, SUBSTITUA PELA SUA CHAVE:
+            const apiKey = "SUA_CHAVE_DE_API_AQUI"; 
+            // const apiKey = ""; // Deixe vazio para o ambiente Canvas
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("Gemini API error response:", errorBody);
+                    throw new Error(`Gemini API request failed with status ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log("Gemini API result:", result);
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiText = result.candidates[0].content.parts[0].text;
+                    geminiChatHistory.push({ role: "model", parts: [{ text: aiText }] });
+                    return aiText;
+                } else {
+                    console.warn("Gemini API response structure unexpected or content missing:", result);
+                    return "Não consegui gerar uma resposta. A resposta da IA estava vazia ou malformada.";
+                }
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                return `Erro ao comunicar com a IA: ${error.message}. Verifique o console para mais detalhes.`;
+            }
+        }
+
+        // --- END CHAT WITH AI ---
+
+        // --- RESPONSIVE CHART REDRAW ---
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (ui.profileSection && !ui.profileSection.classList.contains('hidden')) {
+                    console.log("Window resized, regenerating profile stats and charts.");
+                    generateProfileStats(); // Redraw charts on resize if profile section is visible
+                }
+            }, 250); 
+        });
+
+
+        if ('serviceWorker' in navigator) { 
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js') 
+              .then(registration => {
+                console.log('Service Worker registrado com sucesso:', registration.scope);
+              })
+              .catch(error => {
+                console.log('Falha ao registrar o Service Worker:', error);
+              });
+          });
+        }
+    </script>
+</body>
+</html>
